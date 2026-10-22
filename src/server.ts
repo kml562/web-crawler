@@ -26,6 +26,21 @@ const PORT = process.env["PORT"] ?? 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// ── app-level password guard ─────────────────────────────
+const APP_PASSWORD = process.env["APP_PASSWORD"];
+
+app.post("/api/auth/app-login", (req, res) => {
+  const { password } = req.body as { password: string };
+  if (!APP_PASSWORD) { res.json({ ok: true }); return; }
+  if (password === APP_PASSWORD) res.json({ ok: true });
+  else res.status(401).json({ error: "Wrong password" });
+});
+
+app.get("/api/auth/app-check", (_req, res) => {
+  res.json({ passwordRequired: !!APP_PASSWORD });
+});
+
 app.use(express.static(path.resolve("public")));
 
 // ── SSE client registry ──────────────────────────────────

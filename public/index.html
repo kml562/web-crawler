@@ -207,6 +207,20 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
 .btn-connecting{padding:5px 11px;font-size:11px;font-weight:600;border-radius:6px;background:var(--amber-bg);color:var(--amber);border:1px solid transparent;font-family:inherit;white-space:nowrap}
 </style>
 
+<!-- Login screen -->
+<div id="loginScreen" hidden style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:360px;text-align:center">
+    <div style="font-size:36px;margin-bottom:16px">🔒</div>
+    <h1 style="font-size:20px;font-weight:700;margin-bottom:6px">Job Hunt Dashboard</h1>
+    <p style="color:var(--fg-muted);font-size:13px;margin-bottom:24px">Enter your password to continue</p>
+    <input type="password" id="appPassword" placeholder="Password"
+      style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);font-size:14px;font-family:inherit;outline:none;margin-bottom:12px">
+    <button class="btn btn-primary" id="appLoginBtn" style="width:100%;justify-content:center">Unlock</button>
+    <p id="loginErr" style="color:var(--red);font-size:13px;margin-top:10px" hidden>Wrong password</p>
+  </div>
+</div>
+
+<div id="appContent" hidden>
 <div class="wrap">
   <div class="header">
     <div>
@@ -215,6 +229,7 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
     </div>
     <div class="header-actions">
       <button class="theme-btn" id="themeToggle" title="Toggle theme">🌙</button>
+      <button class="btn" id="logoutBtn" title="Lock dashboard" style="display:none;font-size:12px;padding:6px 12px">🔒 Lock</button>
     </div>
   </div>
 
@@ -380,9 +395,10 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
   </div>
   </div><!-- end tab-dashboard -->
 </div>
+</div><!-- end appContent -->
 
 <script>
-const API = 'http://localhost:3000';
+const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 let allJobs = [], statusChart = null, sourceChart = null, activeFilter = 'all';
 let evtSource = null;
 
@@ -790,7 +806,63 @@ async function loadStats() {
     if (status.running) { setCrawling(true); connectSSE(); }
   } catch {}
 }
-loadStats();
-loadAuthStatus();
-loadProfile();
+// ── app-level password gate ───────────────────────────────
+const LOGIN_KEY = 'app_unlocked';
+
+let passwordProtected = false;
+
+async function checkAppLogin() {
+  try {
+    const res = await fetch(`${API}/api/auth/app-check`);
+    const { passwordRequired } = await res.json();
+    passwordProtected = !!passwordRequired;
+    if (!passwordRequired) { showApp(); return; }
+    const stored = localStorage.getItem(LOGIN_KEY);
+    if (stored === '1') { showApp(); return; }
+    showLogin();
+  } catch { showApp(); }
+}
+
+function showLogin() {
+  document.getElementById('loginScreen').hidden = false;
+  document.getElementById('appContent').hidden = true;
+}
+
+function showApp() {
+  document.getElementById('loginScreen').hidden = true;
+  document.getElementById('appContent').hidden = false;
+  document.getElementById('logoutBtn').style.display = passwordProtected ? '' : 'none';
+  loadStats();
+  loadAuthStatus();
+  loadProfile();
+}
+
+document.getElementById('appLoginBtn').addEventListener('click', async () => {
+  const pw = document.getElementById('appPassword').value;
+  const err = document.getElementById('loginErr');
+  err.hidden = true;
+  try {
+    const res = await fetch(`${API}/api/auth/app-login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ password: pw })
+    });
+    if (res.ok) {
+      try { localStorage.setItem(LOGIN_KEY, '1'); } catch {}
+      showApp();
+    } else {
+      err.hidden = false;
+    }
+  } catch { err.textContent = 'Cannot reach server'; err.hidden = false; }
+});
+
+document.getElementById('appPassword').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('appLoginBtn').click();
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  try { localStorage.removeItem(LOGIN_KEY); } catch {}
+  showLogin();
+});
+
+checkAppLogin();
 </script>
