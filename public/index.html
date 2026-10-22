@@ -707,11 +707,51 @@ function showResumeUploaded(name) {
   document.getElementById('resumeStatus').hidden = false;
 }
 
+async function uploadResume(file) {
+  const zone = document.getElementById('resumeZone');
+  zone.querySelector('h3').textContent = 'Uploading…';
+  const fd = new FormData(); fd.append('resume', file);
+  try {
+    const res = await fetch(`${API}/api/profile/resume`, { method:'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { zone.querySelector('h3').textContent = 'Upload Resume'; alert(data.error || 'Upload failed'); return; }
+    showResumeUploaded(file.name);
+    zone.querySelector('h3').textContent = 'Upload Resume';
+    if (data.extracted) showExtractedBanner(data.extracted);
+  } catch { zone.querySelector('h3').textContent = 'Upload Resume'; }
+}
+
+function showExtractedBanner(ext) {
+  let banner = document.getElementById('extractedBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'extractedBanner';
+    banner.style.cssText = 'background:var(--green-bg);border:1px solid var(--green);border-radius:10px;padding:14px 16px;margin-top:12px;font-size:13px';
+    document.getElementById('resumeZone').parentNode.appendChild(banner);
+  }
+  const fields = ['firstName','lastName','email','phone','currentRole','linkedinUrl','githubUrl','summary'];
+  const filled = fields.filter(f => ext[f]);
+  banner.innerHTML = `<div style="font-weight:600;color:var(--green);margin-bottom:8px">✓ Extracted ${filled.length} fields from your resume</div>
+    <div style="color:var(--fg-muted);margin-bottom:10px;font-size:12px">${filled.map(f => f.replace(/([A-Z])/g,' $1').trim()).join(' · ')}</div>
+    <button class="btn btn-primary" id="applyExtractedBtn" style="font-size:12px;padding:6px 14px">Fill Profile with Extracted Data</button>`;
+  document.getElementById('applyExtractedBtn').addEventListener('click', () => {
+    const map = { 'pf-first':'firstName','pf-last':'lastName','pf-email':'email','pf-phone':'phone',
+      'pf-role':'currentRole','pf-linkedin':'linkedinUrl','pf-github':'githubUrl','pf-portfolio':'portfolioUrl',
+      'pf-summary':'summary','pf-exp':'yearsOfExperience' };
+    for (const [id, key] of Object.entries(map)) {
+      const el = document.getElementById(id); if (el && ext[key]) el.value = ext[key];
+    }
+    if (ext.skills?.length) {
+      skills = [...new Set([...skills, ...ext.skills])];
+      renderSkillTags();
+    }
+    banner.innerHTML = '<div style="color:var(--green);font-weight:600">✓ Profile filled — review and hit Save Profile</div>';
+  });
+}
+
 document.getElementById('resumeInput').addEventListener('change', async e => {
   const file = e.target.files?.[0]; if (!file) return;
-  const fd = new FormData(); fd.append('resume', file);
-  const res = await fetch(`${API}/api/profile/resume`, { method:'POST', body: fd });
-  if (res.ok) showResumeUploaded(file.name);
+  await uploadResume(file);
 });
 
 const resumeZone = document.getElementById('resumeZone');
@@ -720,9 +760,7 @@ resumeZone.addEventListener('dragleave', () => resumeZone.classList.remove('drag
 resumeZone.addEventListener('drop', async e => {
   e.preventDefault(); resumeZone.classList.remove('drag');
   const file = e.dataTransfer?.files?.[0]; if (!file) return;
-  const fd = new FormData(); fd.append('resume', file);
-  const res = await fetch(`${API}/api/profile/resume`, { method:'POST', body: fd });
-  if (res.ok) showResumeUploaded(file.name);
+  await uploadResume(file);
 });
 
 // ── accounts ─────────────────────────────────────────────
@@ -829,12 +867,17 @@ function showLogin() {
 }
 
 function showApp() {
-  document.getElementById('loginScreen').hidden = true;
-  document.getElementById('appContent').hidden = false;
+  const login = document.getElementById('loginScreen');
+  const content = document.getElementById('appContent');
+  // force display in case hidden attribute alone isn't enough
+  login.style.display = 'none';
+  content.style.display = 'block';
+  login.hidden = true;
+  content.hidden = false;
   document.getElementById('logoutBtn').style.display = passwordProtected ? '' : 'none';
-  loadStats();
-  loadAuthStatus();
-  loadProfile();
+  try { loadStats(); } catch {}
+  try { loadAuthStatus(); } catch {}
+  try { loadProfile(); } catch {}
 }
 
 document.getElementById('appLoginBtn').addEventListener('click', async () => {

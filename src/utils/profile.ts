@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import { connectDB } from "../db/connect.js";
+import { Profile } from "../db/models/Profile.js";
 
 const PROFILE_FILE = path.resolve("data/profile.json");
 const RESUME_PATH  = path.resolve("data/resume.pdf");
@@ -49,7 +51,16 @@ export function saveProfile(profile: Partial<UserProfile>): UserProfile {
   const current = loadProfile();
   const updated = { ...current, ...profile };
   fs.writeFileSync(PROFILE_FILE, JSON.stringify(updated, null, 2));
+  // async sync to MongoDB — fire and forget, local file is authoritative
+  void syncProfileToDB(updated);
   return updated;
+}
+
+async function syncProfileToDB(profile: UserProfile): Promise<void> {
+  try {
+    await connectDB();
+    await Profile.findOneAndUpdate({}, profile, { upsert: true, new: true });
+  } catch { /* DB sync is best-effort */ }
 }
 
 export function resumeExists(): boolean {

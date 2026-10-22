@@ -20,6 +20,7 @@ import type { BaseScraper } from "./crawler/base.js";
 import { getAuthStatus, loginWithBrowser, disconnect } from "./auth/loginManager.js";
 import type { AuthSource } from "./auth/loginManager.js";
 import { loadProfile, saveProfile, RESUME_PATH } from "./utils/profile.js";
+import { extractProfileFromPDF } from "./utils/resumeParser.js";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -250,7 +251,7 @@ app.post("/api/profile", (req, res) => {
   res.json({ ok: true, profile: updated });
 });
 
-app.post("/api/profile/resume", upload.single("resume"), (req, res) => {
+app.post("/api/profile/resume", upload.single("resume"), async (req, res) => {
   if (!req.file) { res.status(400).json({ error: "No file uploaded" }); return; }
   if (!req.file.originalname.endsWith(".pdf") && req.file.mimetype !== "application/pdf") {
     res.status(400).json({ error: "Only PDF files are accepted" }); return;
@@ -258,7 +259,14 @@ app.post("/api/profile/resume", upload.single("resume"), (req, res) => {
   fs.mkdirSync("data", { recursive: true });
   fs.writeFileSync(RESUME_PATH, req.file.buffer);
   saveProfile({ resumePath: RESUME_PATH });
-  res.json({ ok: true, size: req.file.size });
+
+  // Auto-extract profile fields from the PDF
+  let extracted = null;
+  try {
+    extracted = await extractProfileFromPDF(req.file.buffer);
+  } catch { /* extraction is best-effort */ }
+
+  res.json({ ok: true, size: req.file.size, extracted });
 });
 
 app.get("/api/profile/resume", (_req, res) => {
