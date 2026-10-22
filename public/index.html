@@ -147,11 +147,43 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
 .mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg-muted)}
 .empty{text-align:center;padding:36px;color:var(--fg-muted)}
 .empty strong{display:block;margin-bottom:4px;font-size:14px}
+/* tabs */
+.tab-nav{display:flex;gap:4px;padding:4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:fit-content;margin-bottom:24px}
+.tab-btn{padding:6px 18px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--fg-muted);font-family:inherit;transition:all .15s}
+.tab-btn.active{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* profile */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.profile-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.05em}
+.field input,.field textarea,.field select{padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s;width:100%}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:80px;line-height:1.5}
+.skills-input-wrap{position:relative}
+.skills-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.skill-tag{display:inline-flex;align-items:center;gap:4px;background:var(--accent-bg);color:var(--accent);border-radius:20px;padding:2px 8px 2px 10px;font-size:12px;font-weight:500}
+.skill-tag button{background:none;border:none;cursor:pointer;color:var(--accent);font-size:14px;line-height:1;padding:0;opacity:.7}
+.skill-tag button:hover{opacity:1}
+.resume-zone{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
+.resume-zone:hover,.resume-zone.drag{border-color:var(--accent);background:var(--accent-bg)}
+.resume-zone input{display:none}
+.resume-zone .rz-icon{font-size:28px;margin-bottom:8px}
+.resume-zone h3{font-size:14px;font-weight:600}
+.resume-zone p{font-size:12px;color:var(--fg-muted);margin-top:3px}
+.resume-status{display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--green-bg);font-size:13px;color:var(--green);font-weight:500}
+.profile-save-row{display:flex;align-items:center;gap:12px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.save-msg{font-size:13px;color:var(--green)}
+
 .theme-btn{width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px}
 .theme-btn:hover{background:var(--surface2)}
 .divider{display:flex;align-items:center;gap:10px;color:var(--fg-muted);font-size:12px;margin:16px 0}
 .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
 .upload-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+@media(max-width:760px){.profile-layout{grid-template-columns:1fr !important}}
 
 /* accounts */
 .accounts-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
@@ -185,6 +217,73 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
       <button class="theme-btn" id="themeToggle" title="Toggle theme">🌙</button>
     </div>
   </div>
+
+  <!-- Tab nav -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="profile">👤 Profile</button>
+  </div>
+
+  <!-- Profile tab -->
+  <div class="tab-content" id="tab-profile">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start" class="profile-layout">
+
+      <!-- Left: personal info -->
+      <div class="card" style="padding:24px">
+        <h2 style="font-size:15px;font-weight:700;margin-bottom:20px;color:var(--fg)">Your Info</h2>
+        <div class="profile-grid">
+          <div class="field"><label>First Name</label><input type="text" id="pf-first" placeholder="Kamal"></div>
+          <div class="field"><label>Last Name</label><input type="text" id="pf-last" placeholder="Bisht"></div>
+          <div class="field"><label>Email</label><input type="email" id="pf-email" placeholder="you@email.com"></div>
+          <div class="field"><label>Phone</label><input type="tel" id="pf-phone" placeholder="+91 98765 43210"></div>
+          <div class="field"><label>Current Role</label><input type="text" id="pf-role" placeholder="Software Engineer"></div>
+          <div class="field"><label>Years of Experience</label><input type="number" id="pf-exp" min="0" max="40" placeholder="2"></div>
+          <div class="field full"><label>LinkedIn URL</label><input type="url" id="pf-linkedin" placeholder="https://linkedin.com/in/yourname"></div>
+          <div class="field full"><label>GitHub URL</label><input type="url" id="pf-github" placeholder="https://github.com/yourname"></div>
+          <div class="field full"><label>Portfolio / Website</label><input type="url" id="pf-portfolio" placeholder="https://yoursite.com"></div>
+          <div class="field full">
+            <label>Summary <span style="font-weight:400;text-transform:none;letter-spacing:0">(used in cover letter fields)</span></label>
+            <textarea id="pf-summary" placeholder="Brief professional summary…"></textarea>
+          </div>
+          <div class="field full">
+            <label>Skills</label>
+            <div class="skills-input-wrap">
+              <input type="text" id="pf-skills-input" placeholder="Type a skill and press Enter">
+            </div>
+            <div class="skills-tags" id="pf-skills-tags"></div>
+          </div>
+        </div>
+        <div class="profile-save-row">
+          <button class="btn btn-primary" id="saveProfileBtn">Save Profile</button>
+          <span class="save-msg" id="saveMsgProfile" hidden>✓ Saved</span>
+        </div>
+      </div>
+
+      <!-- Right: resume + accounts -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card" style="padding:20px">
+          <h2 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--fg)">Resume</h2>
+          <label class="resume-zone" id="resumeZone">
+            <input type="file" id="resumeInput" accept=".pdf">
+            <div class="rz-icon">📄</div>
+            <h3>Upload Resume</h3>
+            <p>PDF only — used when auto-applying</p>
+          </label>
+          <div class="resume-status" id="resumeStatus" hidden>
+            <span>✓</span><span id="resumeStatusText">resume.pdf uploaded</span>
+            <a href="/api/profile/resume" target="_blank" style="margin-left:auto;font-size:12px;color:var(--accent)">View ↗</a>
+          </div>
+        </div>
+
+        <div class="card" style="padding:20px">
+          <h2 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--fg)">Connected Accounts</h2>
+          <div id="accountsGridProfile" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content active" id="tab-dashboard">
 
   <!-- Connected Accounts -->
   <div class="accounts-panel" id="accountsPanel">
@@ -279,6 +378,7 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
       </table>
     </div>
   </div>
+  </div><!-- end tab-dashboard -->
 </div>
 
 <script>
@@ -514,6 +614,101 @@ function parseClientSide(results) {
       location:r.job.location, url:r.job.url, appliedAt:r.appliedAt||r.job.foundAt, status:r.status })) });
 }
 
+// ── tabs ─────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── profile ───────────────────────────────────────────────
+let skills = [];
+
+async function loadProfile() {
+  try {
+    const res = await fetch(`${API}/api/profile`);
+    const p = await res.json();
+    document.getElementById('pf-first').value     = p.firstName || '';
+    document.getElementById('pf-last').value      = p.lastName  || '';
+    document.getElementById('pf-email').value     = p.email     || '';
+    document.getElementById('pf-phone').value     = p.phone     || '';
+    document.getElementById('pf-role').value      = p.currentRole || '';
+    document.getElementById('pf-exp').value       = p.yearsOfExperience || '';
+    document.getElementById('pf-linkedin').value  = p.linkedinUrl || '';
+    document.getElementById('pf-github').value    = p.githubUrl  || '';
+    document.getElementById('pf-portfolio').value = p.portfolioUrl || '';
+    document.getElementById('pf-summary').value   = p.summary   || '';
+    skills = p.skills || [];
+    renderSkills();
+    if (p.resumePath) showResumeUploaded('resume.pdf');
+  } catch {}
+}
+
+function renderSkills() {
+  const wrap = document.getElementById('pf-skills-tags');
+  wrap.innerHTML = skills.map((s,i) =>
+    `<span class="skill-tag">${esc(s)}<button onclick="removeSkill(${i})">×</button></span>`
+  ).join('');
+}
+function removeSkill(i) { skills.splice(i,1); renderSkills(); }
+
+document.getElementById('pf-skills-input').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ',') return;
+  e.preventDefault();
+  const val = e.target.value.trim();
+  if (val && !skills.includes(val)) { skills.push(val); renderSkills(); }
+  e.target.value = '';
+});
+
+document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+  const body = {
+    firstName:         document.getElementById('pf-first').value.trim(),
+    lastName:          document.getElementById('pf-last').value.trim(),
+    email:             document.getElementById('pf-email').value.trim(),
+    phone:             document.getElementById('pf-phone').value.trim(),
+    currentRole:       document.getElementById('pf-role').value.trim(),
+    yearsOfExperience: Number(document.getElementById('pf-exp').value) || 0,
+    linkedinUrl:       document.getElementById('pf-linkedin').value.trim(),
+    githubUrl:         document.getElementById('pf-github').value.trim(),
+    portfolioUrl:      document.getElementById('pf-portfolio').value.trim(),
+    summary:           document.getElementById('pf-summary').value.trim(),
+    skills,
+  };
+  const res = await fetch(`${API}/api/profile`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (res.ok) {
+    const msg = document.getElementById('saveMsgProfile');
+    msg.hidden = false;
+    setTimeout(() => { msg.hidden = true; }, 2500);
+  }
+});
+
+// Resume upload
+function showResumeUploaded(name) {
+  document.getElementById('resumeStatusText').textContent = name + ' uploaded';
+  document.getElementById('resumeStatus').hidden = false;
+}
+
+document.getElementById('resumeInput').addEventListener('change', async e => {
+  const file = e.target.files?.[0]; if (!file) return;
+  const fd = new FormData(); fd.append('resume', file);
+  const res = await fetch(`${API}/api/profile/resume`, { method:'POST', body: fd });
+  if (res.ok) showResumeUploaded(file.name);
+});
+
+const resumeZone = document.getElementById('resumeZone');
+resumeZone.addEventListener('dragover', e => { e.preventDefault(); resumeZone.classList.add('drag'); });
+resumeZone.addEventListener('dragleave', () => resumeZone.classList.remove('drag'));
+resumeZone.addEventListener('drop', async e => {
+  e.preventDefault(); resumeZone.classList.remove('drag');
+  const file = e.dataTransfer?.files?.[0]; if (!file) return;
+  const fd = new FormData(); fd.append('resume', file);
+  const res = await fetch(`${API}/api/profile/resume`, { method:'POST', body: fd });
+  if (res.ok) showResumeUploaded(file.name);
+});
+
 // ── accounts ─────────────────────────────────────────────
 const SOURCE_ICONS = { linkedin:'💼', indeed:'🔍', naukri:'🇮🇳', wellfound:'🚀', greenhouse:'🌿', lever:'⚙️', weworkremotely:'🌍' };
 let connectingSource = null;
@@ -526,9 +721,8 @@ async function loadAuthStatus() {
   } catch { /* server not up yet */ }
 }
 
-function renderAccounts(status) {
-  const grid = document.getElementById('accountsGrid');
-  grid.innerHTML = Object.entries(status).map(([src, info]) => {
+function accountsHTML(status) {
+  return Object.entries(status).map(([src, info]) => {
     const icon = SOURCE_ICONS[src] || '🔗';
     const isConnecting = connectingSource === src;
     let statusHtml, actionHtml;
@@ -553,6 +747,14 @@ function renderAccounts(status) {
       ${actionHtml}
     </div>`;
   }).join('');
+}
+
+function renderAccounts(status) {
+  const html = accountsHTML(status);
+  const g1 = document.getElementById('accountsGrid');
+  const g2 = document.getElementById('accountsGridProfile');
+  if (g1) g1.innerHTML = html;
+  if (g2) g2.innerHTML = html;
 }
 
 async function connectSource(src) {
@@ -590,4 +792,5 @@ async function loadStats() {
 }
 loadStats();
 loadAuthStatus();
+loadProfile();
 </script>

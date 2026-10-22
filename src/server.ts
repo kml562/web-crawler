@@ -18,6 +18,7 @@ import { appendResult } from "./tracker/storage.js";
 import type { BaseScraper } from "./crawler/base.js";
 import { getAuthStatus, loginWithBrowser, disconnect } from "./auth/loginManager.js";
 import type { AuthSource } from "./auth/loginManager.js";
+import { loadProfile, saveProfile, RESUME_PATH } from "./utils/profile.js";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -235,6 +236,32 @@ app.post("/api/auth/login", (req, res) => {
     .then(() => { broadcast("auth_status", getAuthStatus()); broadcast("log", { msg: `✓ ${source} connected` }); })
     .catch((err) => broadcast("log", { msg: `Login failed: ${err instanceof Error ? err.message : String(err)}` }))
     .finally(() => { loginRunning = false; });
+});
+
+// ── profile ───────────────────────────────────────────────
+app.get("/api/profile", (_req, res) => {
+  res.json(loadProfile());
+});
+
+app.post("/api/profile", (req, res) => {
+  const updated = saveProfile(req.body);
+  res.json({ ok: true, profile: updated });
+});
+
+app.post("/api/profile/resume", upload.single("resume"), (req, res) => {
+  if (!req.file) { res.status(400).json({ error: "No file uploaded" }); return; }
+  if (!req.file.originalname.endsWith(".pdf") && req.file.mimetype !== "application/pdf") {
+    res.status(400).json({ error: "Only PDF files are accepted" }); return;
+  }
+  fs.mkdirSync("data", { recursive: true });
+  fs.writeFileSync(RESUME_PATH, req.file.buffer);
+  saveProfile({ resumePath: RESUME_PATH });
+  res.json({ ok: true, size: req.file.size });
+});
+
+app.get("/api/profile/resume", (_req, res) => {
+  if (!fs.existsSync(RESUME_PATH)) { res.status(404).json({ error: "No resume uploaded yet" }); return; }
+  res.download(RESUME_PATH, "resume.pdf");
 });
 
 app.post("/api/auth/disconnect", (req, res) => {

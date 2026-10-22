@@ -2,6 +2,7 @@ import { BaseScraper } from "../crawler/base.js";
 import type { Job, ApplicationResult, JobsConfig } from "../types/index.js";
 import { delay } from "../utils/delay.js";
 import { hasApplied } from "../tracker/storage.js";
+import { loadProfile } from "../utils/profile.js";
 import axios from "axios";
 import crypto from "crypto";
 
@@ -69,17 +70,15 @@ export class LeverScraper extends BaseScraper {
       await applyBtn.click();
       await delay(1500, 2500);
 
-      await this.fillIfPresent('input[name="name"]', `${this.cfg.resume.firstName} ${this.cfg.resume.lastName}`);
-      await this.fillIfPresent('input[name="email"]', this.cfg.resume.email);
-      await this.fillIfPresent('input[name="phone"]', this.cfg.resume.phone);
-
-      if (this.cfg.resume.linkedinUrl) {
-        await this.fillIfPresent('input[name="urls[LinkedIn]"]', this.cfg.resume.linkedinUrl);
-      }
-
-      if (this.cfg.resume.path) {
+      const profile = loadProfile();
+      await this.fillIfPresent('input[name="name"]', `${profile.firstName} ${profile.lastName}`);
+      await this.fillIfPresent('input[name="email"]', profile.email);
+      await this.fillIfPresent('input[name="phone"]', profile.phone);
+      if (profile.linkedinUrl) await this.fillIfPresent('input[name="urls[LinkedIn]"]', profile.linkedinUrl);
+      if (profile.portfolioUrl) await this.fillIfPresent('input[name="urls[Portfolio]"]', profile.portfolioUrl);
+      if (profile.resumePath) {
         const uploadEl = await this.page.$('input[type="file"]');
-        if (uploadEl) await uploadEl.setInputFiles(this.cfg.resume.path);
+        if (uploadEl) await uploadEl.setInputFiles(profile.resumePath);
       }
 
       await delay(800, 1500);

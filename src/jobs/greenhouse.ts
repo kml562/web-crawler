@@ -2,6 +2,7 @@ import { BaseScraper } from "../crawler/base.js";
 import type { Job, ApplicationResult, JobsConfig } from "../types/index.js";
 import { delay } from "../utils/delay.js";
 import { hasApplied } from "../tracker/storage.js";
+import { loadProfile } from "../utils/profile.js";
 import axios from "axios";
 import crypto from "crypto";
 
@@ -70,23 +71,15 @@ export class GreenhouseScraper extends BaseScraper {
       await applyBtn.click();
       await delay(1500, 2500);
 
-      // Fill first name, last name, email
-      const { firstName, lastName, email, phone, resumePath: _ } = {
-        firstName: this.cfg.resume.firstName,
-        lastName: this.cfg.resume.lastName,
-        email: this.cfg.resume.email,
-        phone: this.cfg.resume.phone,
-        resumePath: this.cfg.resume.path,
-      };
+      const profile = loadProfile();
+      await this.fillIfPresent('input[id*="first_name"]', profile.firstName);
+      await this.fillIfPresent('input[id*="last_name"]', profile.lastName);
+      await this.fillIfPresent('input[id*="email"]', profile.email);
+      await this.fillIfPresent('input[id*="phone"]', profile.phone);
 
-      await this.fillIfPresent('input[id*="first_name"]', firstName);
-      await this.fillIfPresent('input[id*="last_name"]', lastName);
-      await this.fillIfPresent('input[id*="email"]', email);
-      await this.fillIfPresent('input[id*="phone"]', phone);
-
-      if (this.cfg.resume.path) {
+      if (profile.resumePath) {
         const uploadEl = await this.page.$('input[type="file"]');
-        if (uploadEl) await uploadEl.setInputFiles(this.cfg.resume.path);
+        if (uploadEl) await uploadEl.setInputFiles(profile.resumePath);
       }
 
       await delay(800, 1500);
