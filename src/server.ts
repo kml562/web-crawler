@@ -16,6 +16,8 @@ import { LeverScraper } from "./jobs/lever.js";
 import { NaukriScraper } from "./jobs/naukri.js";
 import { appendResult } from "./tracker/storage.js";
 import type { BaseScraper } from "./crawler/base.js";
+import { getAuthStatus, loginWithBrowser, disconnect } from "./auth/loginManager.js";
+import type { AuthSource } from "./auth/loginManager.js";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -207,6 +209,39 @@ app.get("/api/stats", (_req, res) => {
 
 app.get("/api/crawl/status", (_req, res) => {
   res.json({ running: crawlRunning });
+});
+
+// ── auth ─────────────────────────────────────────────────
+app.get("/api/auth/status", (_req, res) => {
+  res.json(getAuthStatus());
+});
+
+let loginRunning = false;
+
+app.post("/api/auth/login", (req, res) => {
+  const { source } = req.body as { source: string };
+  const valid: AuthSource[] = ["naukri", "linkedin", "indeed", "wellfound"];
+  if (!valid.includes(source as AuthSource)) {
+    res.status(400).json({ error: `Unknown source: ${source}` }); return;
+  }
+  if (loginRunning) {
+    res.status(409).json({ error: "A login is already in progress" }); return;
+  }
+  res.json({ ok: true });
+  loginRunning = true;
+  broadcast("auth_status", getAuthStatus());
+
+  loginWithBrowser(source as AuthSource, (msg) => broadcast("log", { msg }))
+    .then(() => { broadcast("auth_status", getAuthStatus()); broadcast("log", { msg: `✓ ${source} connected` }); })
+    .catch((err) => broadcast("log", { msg: `Login failed: ${err instanceof Error ? err.message : String(err)}` }))
+    .finally(() => { loginRunning = false; });
+});
+
+app.post("/api/auth/disconnect", (req, res) => {
+  const { source } = req.body as { source: string };
+  disconnect(source);
+  res.json({ ok: true });
+  broadcast("auth_status", getAuthStatus());
 });
 
 app.listen(PORT, () => {
