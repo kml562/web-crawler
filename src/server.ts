@@ -14,7 +14,7 @@ import { WeWorkRemotelyScraper } from "./jobs/weworkremotely.js";
 import { GreenhouseScraper } from "./jobs/greenhouse.js";
 import { LeverScraper } from "./jobs/lever.js";
 import { NaukriScraper } from "./jobs/naukri.js";
-import { appendResult } from "./tracker/storage.js";
+import { appendResult, loadApplied } from "./tracker/storage.js";
 import type { BaseScraper } from "./crawler/base.js";
 import { getAuthStatus, loginWithBrowser, disconnect } from "./auth/loginManager.js";
 import type { AuthSource } from "./auth/loginManager.js";
@@ -93,11 +93,6 @@ function scraperForSource(source: string, cfg: ReturnType<typeof loadJobsConfig>
 }
 
 // ── helpers ──────────────────────────────────────────────
-function parseResults(raw: string): ApplicationResult[] {
-  try { return JSON.parse(raw) as ApplicationResult[]; }
-  catch { throw new Error("Invalid JSON file"); }
-}
-
 function buildStats(results: ApplicationResult[]) {
   const byStatus = { applied: 0, skipped: 0, failed: 0, already_applied: 0 };
   const bySource: Record<string, number> = {};
@@ -182,8 +177,7 @@ app.post("/api/crawl", (req, res) => {
       await scraper.close();
       await closeBrowser();
 
-      const raw = fs.existsSync("data/applied.json") ? fs.readFileSync("data/applied.json", "utf-8") : "[]";
-      const stats = buildStats(parseResults(raw));
+      const stats = buildStats(loadApplied());
       broadcast("done", { applied, total: jobs.length, stats });
       broadcast("log", { msg: `Done! Applied: ${applied} / ${jobs.length}` });
 
@@ -198,14 +192,12 @@ app.post("/api/crawl", (req, res) => {
   })();
 });
 
-// ── upload JSON ──────────────────────────────────────────
+// ── upload JSON (import old data into DB) ────────────────
 app.post("/api/upload", upload.single("file"), (req, res) => {
   if (!req.file) { res.status(400).json({ error: "No file uploaded" }); return; }
   try {
-    const raw = req.file.buffer.toString("utf-8");
-    const results = parseResults(raw);
-    fs.mkdirSync("data", { recursive: true });
-    fs.writeFileSync("data/applied.json", raw, "utf-8");
+    const results = JSON.parse(req.file.buffer.toString("utf-8")) as ApplicationResult[];
+    for (const r of results) appendResult(r);
     res.json({ ok: true, count: results.length });
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : "Parse error" });
@@ -214,13 +206,7 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
 
 // ── stats ────────────────────────────────────────────────
 app.get("/api/stats", (_req, res) => {
-  const filePath = "data/applied.json";
-  if (!fs.existsSync(filePath)) {
-    res.json({ total: 0, byStatus: {}, bySource: {}, byDate: {}, all: [] });
-    return;
-  }
-  const raw = fs.readFileSync(filePath, "utf-8");
-  res.json(buildStats(parseResults(raw)));
+  res.json(buildStats(loadApplied()));
 });
 
 app.get("/api/crawl/status", (_req, res) => {
