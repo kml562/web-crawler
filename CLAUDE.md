@@ -1,57 +1,86 @@
 # Job Application Web Crawler
 
-A TypeScript/Node.js web crawler that automates job application workflows using Playwright for browser automation.
+A TypeScript/Node.js web crawler that automates job applications across LinkedIn, Indeed, Greenhouse, Lever, Naukri, Wellfound, and WeWorkRemotely using Playwright.
 
 ## Project Goal
-Automate job applications by crawling job boards (LinkedIn, Indeed, Greenhouse, Lever, etc.), extracting job listings, and automating the application process.
+Automate the job search and application process for Software Engineer / SDE roles. Configured for Kamal Bisht's job hunt.
 
 ## Stack
-- **Runtime**: Node.js with TypeScript
-- **Browser automation**: Playwright (handles JS-heavy pages, SPAs)
-- **HTML parsing**: Cheerio (for static pages)
-- **HTTP**: Axios (for API endpoints)
-- **Config**: dotenv for credentials/secrets
+- **Runtime**: Node.js + TypeScript
+- **Browser automation**: Playwright (handles JS-heavy SPAs)
+- **HTML parsing**: Cheerio
+- **HTTP (API-based boards)**: Axios
+- **Config**: dotenv + jobs.config.json
 
 ## Project Structure
 ```
 src/
-  crawler/      # Core crawling logic (page navigation, link extraction)
-  jobs/         # Job board-specific scrapers (LinkedIn, Indeed, etc.)
-  utils/        # Shared helpers (delay, retry, logger)
-  config/       # Configuration and constants
+  types/index.ts        # Shared types: Job, ApplicationResult, JobsConfig
+  config/index.ts       # Config loader (env + jobs.config.json)
+  crawler/
+    browser.ts          # Playwright browser singleton
+    base.ts             # BaseScraper abstract class
+  jobs/
+    linkedin.ts         # LinkedIn Easy Apply
+    indeed.ts           # Indeed scraper
+    greenhouse.ts       # Greenhouse JSON API + auto-fill
+    lever.ts            # Lever JSON API + auto-fill
+    naukri.ts           # Naukri login + apply
+    wellfound.ts        # Wellfound (AngelList) scraper
+    weworkremotely.ts   # WeWorkRemotely scraper
+  tracker/
+    storage.ts          # JSON file read/write (data/applied.json)
+  utils/
+    delay.ts            # Random delay between actions
+    logger.ts           # Colored console logger
+    retry.ts            # Exponential backoff retry
+  index.ts              # Main orchestrator
+
+jobs.config.json        # Search criteria, resume info, source toggles
+data/applied.json       # Applied job log (auto-created)
+.env                    # Credentials (never commit)
 ```
 
 ## How to Run
 ```bash
-npm run dev       # Run with ts-node + nodemon (watch mode)
-npm run build     # Compile TypeScript to dist/
-npm start         # Run compiled output
-npm run crawl     # Run the crawler once
+# First time setup
+cp .env.example .env            # Fill in credentials
+# Add your resume.pdf to the project root
+
+# Run in list mode (finds jobs, no auto-apply)
+npm run crawl
+
+# Enable auto-apply: set "autoApply": true in jobs.config.json
+npm run crawl
+
+# Dev mode (watch)
+npm run dev
 ```
 
 ## Key Conventions
-- All browser automation goes through `src/crawler/` — never use Playwright directly in job scrapers
-- Job board scrapers live in `src/jobs/` — one file per job board
-- Credentials (email, password, API keys) go in `.env` — never hardcode
-- Add random delays between actions (1–3s) to avoid rate limiting and bot detection
-- Always close Playwright browser instances in finally blocks
+- All Playwright browser sessions go through `src/crawler/browser.ts` — use `newPage()`, never `chromium.launch()` directly
+- One file per job board in `src/jobs/` — each extends `BaseScraper`
+- Credentials always from `.env`, never hardcoded
+- Use `delay()` from `src/utils/delay.ts` between actions — never `page.waitForTimeout()`
+- Always call `scraper.close()` in a finally block
+- `hasApplied(jobId)` before every application to prevent duplicates
 
-## Common Patterns
+## Adding a New Job Board
+1. Create `src/jobs/<board>.ts` extending `BaseScraper`
+2. Implement `fetchListings()` and `applyToJob()`
+3. Add a `boolean` toggle to `JobsConfig.sources` in `src/types/index.ts`
+4. Wire it up in `src/index.ts`
+5. Add credentials to `.env.example` if needed
 
-### Adding a new job board scraper
-1. Create `src/jobs/<board-name>.ts`
-2. Export a class that extends `BaseScraper` from `src/crawler/base.ts`
-3. Implement `fetchListings()` and `applyToJob()` methods
-
-### Running with credentials
-```bash
-cp .env.example .env
-# Fill in your credentials in .env
-npm run crawl
-```
+## jobs.config.json Fields
+- `search.autoApply`: set `true` to actually submit applications
+- `search.excludeKeywords`: e.g. `["senior", "staff"]` to skip senior roles
+- `search.blacklistCompanies`: companies to skip entirely
+- `maxApplicationsPerRun`: safety cap per run
+- `sources.*`: enable/disable each job board
 
 ## What NOT to Do
-- Don't commit `.env` or any file with credentials
-- Don't run without delays — job boards will block your IP
-- Don't use `page.waitForTimeout()` — use the utility `delay()` from `src/utils/`
-- Don't scrape at scale without checking the site's robots.txt and ToS
+- Don't commit `.env` — it has real passwords
+- Don't remove the random delays — job boards will block your IP
+- Don't set `maxApplicationsPerRun` above 30 in a single run
+- Don't use `page.waitForTimeout()` — use `delay()` instead

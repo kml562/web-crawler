@@ -1,0 +1,32 @@
+{
+  "search": {
+    "keywords": ["Software Engineer", "SDE", "Backend Engineer", "Full Stack Engineer"],
+    "location": "India",
+    "remote": true,
+    "maxResults": 50,
+    "blacklistCompanies": [],
+    "requiredKeywords": [],
+    "excludeKeywords": ["senior", "staff", "principal", "manager", "director", "intern"]
+  },
+  "resume": {
+    "path": "./resume.pdf",
+    "firstName": "Kamal",
+    "lastName": "Bisht",
+    "email": "kmlb562@gmail.com",
+    "phone": "",
+    "linkedinUrl": "",
+    "portfolioUrl": "",
+    "yearsOfExperience": 2
+  },
+  "sources": {
+    "linkedin": true,
+    "indeed": true,
+    "greenhouse": true,
+    "lever": true,
+    "naukri": true,
+    "wellfound": true,
+    "weworkremotely": true
+  },
+  "autoApply": false,
+  "maxApplicationsPerRun": 20
+}
