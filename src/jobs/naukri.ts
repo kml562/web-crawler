@@ -7,20 +7,20 @@ import { cookiePath } from "../auth/loginManager.js";
 import crypto from "crypto";
 import fs from "fs";
 
+const RECOMMENDED_URL = "https://www.naukri.com/mnjuser/recommendedjobs";
+
 export class NaukriScraper extends BaseScraper {
   constructor(cfg: JobsConfig) {
     super(cfg);
   }
 
   async init(): Promise<void> {
-    // Always open visibly for Naukri — needed for manual OAuth login
     const browser = await chromium.launch({ headless: false });
     const context = await browser.newContext({
       userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       viewport: { width: 1280, height: 800 },
     });
 
-    // Restore saved cookies if available
     const cp = cookiePath("naukri");
     if (fs.existsSync(cp)) {
       const cookies = JSON.parse(fs.readFileSync(cp, "utf-8"));
@@ -36,24 +36,19 @@ export class NaukriScraper extends BaseScraper {
     await this.page.goto("https://www.naukri.com", { waitUntil: "load", timeout: 30000 });
     await delay(1500, 2000);
 
-    // Check if already logged in
-    const loggedIn = await this.page.$('.nI-gNb-log-reg-pepole-wrap, [class*="userInfo"], .user-name');
+    const loggedIn = await this.page.$('.nI-gNb-log-reg-pepole-wrap, [class*="userInfo"], .nI-gNb-Header__search');
     if (loggedIn) {
       this.log("Already logged in via saved session");
       return;
     }
 
-    // Not logged in — open login page and wait for user to log in manually
     await this.page.goto("https://www.naukri.com/nlogin/login", { waitUntil: "load" });
     this.log("Browser opened — please log in with Google/OAuth in the browser window");
     this.log("Waiting up to 2 minutes for you to log in…");
 
-    // Wait until the URL leaves the login page (user completed login)
     await this.page.waitForURL((url) => !url.href.includes("/nlogin/"), { timeout: 120000 });
-
     await delay(2000, 3000);
 
-    // Save cookies for next run
     const cookies = await this.context.cookies();
     fs.mkdirSync("data", { recursive: true });
     fs.writeFileSync(cookiePath("naukri"), JSON.stringify(cookies, null, 2));
@@ -63,46 +58,69 @@ export class NaukriScraper extends BaseScraper {
   async fetchListings(): Promise<Job[]> {
     await this.login();
 
-    const { keywords, location, maxResults } = this.cfg.search;
-    const slug = (keywords[0] ?? "software-engineer").toLowerCase().replace(/\s+/g, "-");
-    const locSlug = (location || "india").toLowerCase().replace(/\s+/g, "-");
-    const url = `https://www.naukri.com/${slug}-jobs-in-${locSlug}`;
-
-    await this.page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
-    await delay(1500, 2500);
+    this.log("Opening recommended jobs page…");
+    await this.page.goto(RECOMMENDED_URL, { waitUntil: "networkidle", timeout: 30000 });
+    await delay(2000, 3000);
 
     const jobs: Job[] = [];
+    const { maxResults } = this.cfg.search;
+    let scrollAttempts = 0;
 
-    while (jobs.length < maxResults) {
-      const cards = await this.page.$$('.jobTuple, article.jobTupleHeader');
-      if (cards.length === 0) break;
+    while (jobs.length < maxResults && scrollAttempts < 10) {
+      // Naukri recommended jobs uses these selectors
+      const cards = await this.page.$$(
+        'article.jobTuple, div.jobTuple, [class*="jobTupleHeader"], [data-job-id]'
+      );
+
+      if (cards.length === 0) {
+        this.log("No job cards found — trying to scroll to load more");
+        await this.page.mouse.wheel(0, 800);
+        await delay(1500, 2500);
+        scrollAttempts++;
+        continue;
+      }
 
       for (const card of cards) {
         if (jobs.length >= maxResults) break;
         try {
-          const titleEl = await card.$('a.title, a[class*="title"]');
-          const companyEl = await card.$('.companyInfo a, a[class*="comp-name"]');
-          const locationEl = await card.$('.location span, span[class*="locWdth"]');
-          const href = await titleEl?.getAttribute("href");
-          const title = (await titleEl?.innerText())?.trim() ?? "";
+          const titleEl = await card.$(
+            'a.title, a[class*="title"], a[href*="/job-listings-"]'
+          );
+          const companyEl = await card.$(
+            '.companyInfo a, a[class*="comp-name"], [class*="companyName"]'
+          );
+          const locationEl = await card.$(
+            '.location span, span[class*="locWdth"], [class*="location"]'
+          );
+
+          const title   = (await titleEl?.innerText())?.trim() ?? "";
           const company = (await companyEl?.innerText())?.trim() ?? "";
-          const loc = (await locationEl?.innerText())?.trim() ?? "";
+          const loc     = (await locationEl?.innerText())?.trim() ?? "";
+          const href    = await titleEl?.getAttribute("href");
 
           if (!title || !href) continue;
 
-          const id = crypto.createHash("md5").update(href).digest("hex");
-          const job: Job = { id, title, company, location: loc, url: href, source: "naukri", easyApply: true, foundAt: new Date().toISOString() };
-          if (this.matchesSearch(job)) jobs.push(job);
-        } catch { /* skip */ }
+          const jobUrl = href.startsWith("http") ? href : `https://www.naukri.com${href}`;
+          const id = crypto.createHash("md5").update(jobUrl).digest("hex");
+
+          if (jobs.some((j) => j.id === id)) continue; // deduplicate
+
+          jobs.push({
+            id, title, company, location: loc,
+            url: jobUrl, source: "naukri",
+            easyApply: true,
+            foundAt: new Date().toISOString(),
+          });
+        } catch { /* skip malformed card */ }
       }
 
-      const nextBtn = await this.page.$('a[title="Next"]');
-      if (!nextBtn) break;
-      await nextBtn.click();
-      await delay(2000, 3500);
+      // scroll down to load next batch
+      await this.page.mouse.wheel(0, 1200);
+      await delay(1500, 2500);
+      scrollAttempts++;
     }
 
-    this.log(`Found ${jobs.length} jobs`);
+    this.log(`Found ${jobs.length} recommended jobs`);
     return jobs;
   }
 
@@ -113,17 +131,43 @@ export class NaukriScraper extends BaseScraper {
       await this.page.goto(job.url, { waitUntil: "load", timeout: 30000 });
       await delay(1500, 2500);
 
-      const applyBtn = await this.page.$('#apply-button, button:has-text("Apply"), a:has-text("Apply")');
-      if (!applyBtn) return { job, status: "skipped" };
+      // Naukri apply button selectors (multiple fallbacks)
+      const applyBtn = await this.page.$(
+        '#apply-button, button[id*="apply"], a[id*="apply"], ' +
+        'button:has-text("Apply"), div[class*="apply-button"] button'
+      );
+
+      if (!applyBtn) {
+        this.log(`No apply button found for ${job.title}`);
+        return { job, status: "skipped" };
+      }
 
       await applyBtn.click();
       await delay(2000, 3000);
 
-      const confirmBtn = await this.page.$('button:has-text("Apply")');
-      if (confirmBtn) { await confirmBtn.click(); await delay(1500, 2500); }
+      // Handle the "Apply" confirmation modal if it appears
+      const confirmBtn = await this.page.$(
+        'button:has-text("Apply"), button[class*="applyBtn"]'
+      );
+      if (confirmBtn) {
+        await confirmBtn.click();
+        await delay(1500, 2500);
+      }
 
-      this.log(`Applied to ${job.title} at ${job.company}`);
+      // Check for success message
+      const success = await this.page.$(
+        '[class*="success"], [class*="applied"], div:has-text("application was sent")'
+      );
+
+      if (success) {
+        this.log(`✓ Applied: ${job.title} @ ${job.company}`);
+        return { job, status: "applied", appliedAt: new Date().toISOString() };
+      }
+
+      // If no explicit success message, assume applied if no error
+      this.log(`Applied (no confirmation shown): ${job.title} @ ${job.company}`);
       return { job, status: "applied", appliedAt: new Date().toISOString() };
+
     } catch (err) {
       return { job, status: "failed", error: err instanceof Error ? err.message : String(err) };
     }
