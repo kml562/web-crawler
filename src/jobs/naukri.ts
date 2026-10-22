@@ -153,7 +153,7 @@ export class NaukriScraper extends BaseScraper {
   }
 
   async applyToJob(job: Job): Promise<ApplicationResult> {
-    if (hasApplied(job.id)) return { job, status: "already_applied" };
+    if (await hasApplied(job.id)) return { job, status: "already_applied" };
 
     try {
       // Extract numeric jobId from the hash — stored original in URL

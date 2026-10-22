@@ -15,6 +15,7 @@ import { GreenhouseScraper } from "./jobs/greenhouse.js";
 import { LeverScraper } from "./jobs/lever.js";
 import { NaukriScraper } from "./jobs/naukri.js";
 import { appendResult, loadApplied } from "./tracker/storage.js";
+import { connectDB } from "./db/connect.js";
 import type { BaseScraper } from "./crawler/base.js";
 import { getAuthStatus, loginWithBrowser, disconnect } from "./auth/loginManager.js";
 import type { AuthSource } from "./auth/loginManager.js";
@@ -165,11 +166,11 @@ app.post("/api/crawl", (req, res) => {
         if (cfg.autoApply) {
           broadcast("log", { msg: `Applying: ${job.title} @ ${job.company}` });
           const result = await scraper.applyToJob(job);
-          appendResult(result);
+          await appendResult(result);
           if (result.status === "applied") applied++;
           broadcast("progress", { job: job.title, company: job.company, status: result.status });
         } else {
-          appendResult({ job, status: "skipped" });
+          await appendResult({ job, status: "skipped" });
           broadcast("progress", { job: job.title, company: job.company, status: "skipped" });
         }
       }
@@ -177,7 +178,7 @@ app.post("/api/crawl", (req, res) => {
       await scraper.close();
       await closeBrowser();
 
-      const stats = buildStats(loadApplied());
+      const stats = buildStats(await loadApplied());
       broadcast("done", { applied, total: jobs.length, stats });
       broadcast("log", { msg: `Done! Applied: ${applied} / ${jobs.length}` });
 
@@ -193,11 +194,11 @@ app.post("/api/crawl", (req, res) => {
 });
 
 // ── upload JSON (import old data into DB) ────────────────
-app.post("/api/upload", upload.single("file"), (req, res) => {
+app.post("/api/upload", upload.single("file"), async (req, res) => {
   if (!req.file) { res.status(400).json({ error: "No file uploaded" }); return; }
   try {
     const results = JSON.parse(req.file.buffer.toString("utf-8")) as ApplicationResult[];
-    for (const r of results) appendResult(r);
+    for (const r of results) await appendResult(r);
     res.json({ ok: true, count: results.length });
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : "Parse error" });
@@ -205,8 +206,8 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
 });
 
 // ── stats ────────────────────────────────────────────────
-app.get("/api/stats", (_req, res) => {
-  res.json(buildStats(loadApplied()));
+app.get("/api/stats", async (_req, res) => {
+  res.json(buildStats(await loadApplied()));
 });
 
 app.get("/api/crawl/status", (_req, res) => {
@@ -272,6 +273,13 @@ app.post("/api/auth/disconnect", (req, res) => {
   broadcast("auth_status", getAuthStatus());
 });
 
-app.listen(PORT, () => {
-  console.log(`Dashboard running at http://localhost:${PORT}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Dashboard running at http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection failed:", err);
+    process.exit(1);
+  });

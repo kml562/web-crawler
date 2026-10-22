@@ -38,7 +38,7 @@ async function main() {
         for (const job of jobs) {
           if (applied >= cfg.maxApplicationsPerRun) break;
           const result = await scraper.applyToJob(job);
-          appendResult(result);
+          await appendResult(result);
           if (result.status === "applied") {
             applied++;
             logger.success(`Applied [${applied}/${cfg.maxApplicationsPerRun}]: ${job.title} @ ${job.company}`);
@@ -60,11 +60,11 @@ async function main() {
     logger.info(`\nFound ${allJobs.length} total jobs (autoApply is off — set in jobs.config.json to apply)`);
     logger.info("Jobs saved to data/applied.json for review");
     for (const job of allJobs) {
-      appendResult({ job, status: "skipped" });
+      await appendResult({ job, status: "skipped" });
     }
   }
 
-  const summary = getSummary();
+  const summary = await getSummary();
   logger.success(`\nDone! Applied: ${summary.applied} | Skipped: ${summary.skipped} | Failed: ${summary.failed}`);
 }
 

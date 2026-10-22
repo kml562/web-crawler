@@ -95,7 +95,7 @@ export class LinkedInScraper extends BaseScraper {
   }
 
   async applyToJob(job: Job): Promise<ApplicationResult> {
-    if (hasApplied(job.id)) {
+    if (await hasApplied(job.id)) {
       return { job, status: "already_applied" };
     }
     if (!job.easyApply) {
