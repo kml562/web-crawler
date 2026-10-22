@@ -4,7 +4,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 <style>
-/* ── tokens ──────────────────────────────────────────────── */
 :root {
   --bg:        #f0f2f8;
   --surface:   #ffffff;
@@ -26,284 +25,205 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:        #0d0f18;
-    --surface:   #151824;
-    --surface2:  #1c2030;
-    --border:    #252a3d;
-    --fg:        #e4e8f5;
-    --fg-muted:  #7a82a0;
-    --accent:    #7577f8;
-    --accent-bg: #1e2050;
-    --green:     #4ade80;
-    --green-bg:  #052e16;
-    --amber:     #fbbf24;
-    --amber-bg:  #1c1200;
-    --red:       #f87171;
-    --red-bg:    #1f0505;
-    --blue:      #60a5fa;
-    --blue-bg:   #0c1a3a;
+    --bg:#0d0f18;--surface:#151824;--surface2:#1c2030;--border:#252a3d;
+    --fg:#e4e8f5;--fg-muted:#7a82a0;--accent:#7577f8;--accent-bg:#1e2050;
+    --green:#4ade80;--green-bg:#052e16;--amber:#fbbf24;--amber-bg:#1c1200;
+    --red:#f87171;--red-bg:#1f0505;--blue:#60a5fa;--blue-bg:#0c1a3a;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg:        #0d0f18;
-  --surface:   #151824;
-  --surface2:  #1c2030;
-  --border:    #252a3d;
-  --fg:        #e4e8f5;
-  --fg-muted:  #7a82a0;
-  --accent:    #7577f8;
-  --accent-bg: #1e2050;
-  --green:     #4ade80;
-  --green-bg:  #052e16;
-  --amber:     #fbbf24;
-  --amber-bg:  #1c1200;
-  --red:       #f87171;
-  --red-bg:    #1f0505;
-  --blue:      #60a5fa;
-  --blue-bg:   #0c1a3a;
+  --bg:#0d0f18;--surface:#151824;--surface2:#1c2030;--border:#252a3d;
+  --fg:#e4e8f5;--fg-muted:#7a82a0;--accent:#7577f8;--accent-bg:#1e2050;
+  --green:#4ade80;--green-bg:#052e16;--amber:#fbbf24;--amber-bg:#1c1200;
+  --red:#f87171;--red-bg:#1f0505;--blue:#60a5fa;--blue-bg:#0c1a3a;
   color-scheme: dark;
 }
 
-/* ── reset ───────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0}
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--fg);
-  font-size: 14px;
-  line-height: 1.5;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0;
-  min-height: 100%;
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);color:var(--fg);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0;
 }
+.wrap{max-width:1200px;margin:0 auto;padding-block:28px}
 
-/* ── layout ──────────────────────────────────────────────── */
-.wrap { max-width: 1200px; margin: 0 auto; padding-block: 32px; }
+/* header */
+.header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:24px}
+.header h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
+.header p{color:var(--fg-muted);font-size:13px;margin-top:2px}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 32px;
+/* crawl panel */
+.crawl-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:22px}
+.crawl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.site-input{
+  flex:1;min-width:220px;padding:9px 13px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface2);
+  color:var(--fg);font-size:13px;font-family:inherit;outline:none;
+  transition:border-color .15s;
 }
-.header-left h1 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -.3px;
+.site-input:focus{border-color:var(--accent)}
+.site-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chip{
+  padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border);background:var(--surface2);
+  color:var(--fg-muted);transition:all .15s;user-select:none;
 }
-.header-left p { color: var(--fg-muted); font-size: 13px; margin-top: 2px; }
+.chip:hover,.chip.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
 
-.header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.toggle-row{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.toggle-label{font-size:13px;color:var(--fg-muted)}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--border);border-radius:20px;transition:.2s}
+.slider::before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked + .slider{background:var(--accent)}
+.toggle input:checked + .slider::before{transform:translateX(16px)}
+.toggle-warn{font-size:12px;color:var(--amber);margin-left:4px}
 
-/* ── buttons ─────────────────────────────────────────────── */
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border-radius: 8px; font-size: 13px;
-  font-weight: 500; cursor: pointer; border: none; transition: opacity .15s;
-  font-family: inherit;
+/* live log */
+.log-box{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  margin-top:14px;overflow:hidden;max-height:0;transition:max-height .3s ease;
 }
-.btn:hover { opacity: .85; }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-ghost {
-  background: var(--surface); color: var(--fg);
-  border: 1px solid var(--border);
-}
+.log-box.open{max-height:220px}
+.log-inner{overflow-y:auto;max-height:220px;padding:12px 14px}
+.log-line{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg-muted);line-height:1.6}
+.log-line.ok{color:var(--green)}
+.log-line.err{color:var(--red)}
 
-/* ── upload area ─────────────────────────────────────────── */
-.upload-zone {
-  border: 2px dashed var(--border);
-  border-radius: 14px;
-  padding: 40px 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .2s, background .2s;
-  background: var(--surface);
-  margin-bottom: 28px;
-}
-.upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: var(--accent-bg); }
-.upload-zone input { display: none; }
-.upload-zone .icon { font-size: 32px; margin-bottom: 10px; }
-.upload-zone h3 { font-size: 15px; font-weight: 600; }
-.upload-zone p { color: var(--fg-muted); font-size: 13px; margin-top: 4px; }
-.upload-msg { margin-top: 10px; font-size: 13px; }
-.upload-msg.ok { color: var(--green); }
-.upload-msg.err { color: var(--red); }
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:opacity .15s;font-family:inherit}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{background:var(--surface);color:var(--fg);border:1px solid var(--border)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bg)}
 
-/* ── stat tiles ──────────────────────────────────────────── */
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 14px;
-  margin-bottom: 24px;
-}
-.tile {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px 20px;
-}
-.tile-label { font-size: 11px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .06em; color: var(--fg-muted); margin-bottom: 8px; }
-.tile-value { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums;
-  letter-spacing: -.5px; line-height: 1; }
-.tile-sub { font-size: 12px; color: var(--fg-muted); margin-top: 6px; }
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.tile-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);margin-bottom:6px}
+.tile-value{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1}
+.tile-sub{font-size:12px;color:var(--fg-muted);margin-top:5px}
+.tile.applied .tile-value{color:var(--green)}
+.tile.skipped .tile-value{color:var(--amber)}
+.tile.failed  .tile-value{color:var(--red)}
 
-.tile.applied .tile-value { color: var(--green); }
-.tile.skipped .tile-value { color: var(--amber); }
-.tile.failed  .tile-value { color: var(--red); }
+/* charts */
+.charts{display:grid;grid-template-columns:1fr 1.6fr;gap:12px;margin-bottom:20px}
+@media(max-width:680px){.charts{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);margin-bottom:14px}
+.chart-wrap.donut{max-width:230px;margin:0 auto}
 
-/* ── charts ──────────────────────────────────────────────── */
-.charts { display: grid; grid-template-columns: 1fr 1.6fr; gap: 14px; margin-bottom: 24px; }
-@media (max-width: 680px) { .charts { grid-template-columns: 1fr; } }
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-}
-.card h2 { font-size: 13px; font-weight: 600; color: var(--fg-muted); margin-bottom: 16px;
-  text-transform: uppercase; letter-spacing: .06em; }
-.chart-wrap { position: relative; width: 100%; }
-.chart-wrap.donut { max-width: 240px; margin: 0 auto; }
-.chart-wrap canvas { display: block; }
-
-/* ── table ───────────────────────────────────────────────── */
-.table-card { background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; overflow: hidden; }
-.table-header {
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 10px; padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.table-header h2 { font-size: 13px; font-weight: 600; color: var(--fg-muted);
-  text-transform: uppercase; letter-spacing: .06em; }
-
-.filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.filter-btn {
-  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
-  cursor: pointer; border: 1px solid var(--border); background: var(--surface2);
-  color: var(--fg-muted); font-family: inherit; transition: all .15s;
-}
-.filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 560px; }
-thead th {
-  text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .06em; color: var(--fg-muted);
-  background: var(--surface2); border-bottom: 1px solid var(--border);
-}
-tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: var(--surface2); }
-tbody td { padding: 10px 16px; font-size: 13px; vertical-align: middle; }
-
-.job-title { font-weight: 500; color: var(--fg); }
-.job-title a { color: inherit; text-decoration: none; }
-.job-title a:hover { color: var(--accent); text-decoration: underline; }
-.job-company { color: var(--fg-muted); font-size: 12px; margin-top: 1px; }
-.job-location { color: var(--fg-muted); font-size: 12px; }
-
-.badge {
-  display: inline-block; padding: 2px 8px; border-radius: 20px;
-  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
-  white-space: nowrap;
-}
-.badge-applied  { background: var(--green-bg); color: var(--green); }
-.badge-skipped  { background: var(--amber-bg); color: var(--amber); }
-.badge-failed   { background: var(--red-bg);   color: var(--red); }
-.badge-already  { background: var(--blue-bg);  color: var(--blue); }
-.badge-source   { background: var(--accent-bg); color: var(--accent); }
-
-.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--fg-muted); }
-
-.empty { text-align: center; padding: 40px; color: var(--fg-muted); }
-.empty p { margin-top: 6px; font-size: 13px; }
-
-/* ── theme toggle ────────────────────────────────────────── */
-.theme-btn {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--surface); border: 1px solid var(--border);
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 15px; transition: background .15s;
-}
-.theme-btn:hover { background: var(--surface2); }
+/* table */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.table-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)}
+.table-header h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted)}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--fg-muted);font-family:inherit;transition:all .15s}
+.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:540px}
+thead th{text-align:left;padding:9px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);background:var(--surface2);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
+.job-title{font-weight:500}
+.job-title a{color:inherit;text-decoration:none}
+.job-title a:hover{color:var(--accent);text-decoration:underline}
+.job-company{color:var(--fg-muted);font-size:12px;margin-top:1px}
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.badge-applied{background:var(--green-bg);color:var(--green)}
+.badge-skipped{background:var(--amber-bg);color:var(--amber)}
+.badge-failed{background:var(--red-bg);color:var(--red)}
+.badge-already{background:var(--blue-bg);color:var(--blue)}
+.badge-source{background:var(--accent-bg);color:var(--accent)}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg-muted)}
+.empty{text-align:center;padding:36px;color:var(--fg-muted)}
+.empty strong{display:block;margin-bottom:4px;font-size:14px}
+.theme-btn{width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px}
+.theme-btn:hover{background:var(--surface2)}
+.divider{display:flex;align-items:center;gap:10px;color:var(--fg-muted);font-size:12px;margin:16px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.upload-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 </style>
 
 <div class="wrap">
   <div class="header">
-    <div class="header-left">
+    <div>
       <h1>Job Hunt Dashboard</h1>
-      <p>Track your applications across all job boards</p>
+      <p>Crawl job boards and track your applications</p>
     </div>
     <div class="header-actions">
       <button class="theme-btn" id="themeToggle" title="Toggle theme">🌙</button>
-      <label class="btn btn-primary" style="cursor:pointer">
-        ↑ Upload JSON
-        <input type="file" id="fileInput" accept=".json">
-      </label>
     </div>
   </div>
 
-  <!-- Upload zone -->
-  <div class="upload-zone" id="uploadZone">
-    <div class="icon">📂</div>
-    <h3>Drop your applied.json here</h3>
-    <p>Or click to browse — file is at <span class="mono">data/applied.json</span></p>
-    <div class="upload-msg" id="uploadMsg"></div>
+  <!-- Crawl panel -->
+  <div class="crawl-panel">
+    <div class="crawl-row">
+      <input class="site-input" id="siteInput" placeholder="Enter site URL — e.g. naukri.com or linkedin.com/jobs" />
+      <button class="btn btn-primary" id="crawlBtn">▶ Start Crawl</button>
+      <button class="btn btn-ghost" id="stopBtn" style="display:none">■ Stop</button>
+    </div>
+
+    <div class="site-chips" id="siteChips">
+      <span class="chip" data-site="linkedin.com">LinkedIn</span>
+      <span class="chip" data-site="naukri.com">Naukri</span>
+      <span class="chip" data-site="indeed.com">Indeed</span>
+      <span class="chip" data-site="wellfound.com">Wellfound</span>
+      <span class="chip" data-site="weworkremotely.com">WeWorkRemotely</span>
+      <span class="chip" data-site="greenhouse.io">Greenhouse</span>
+      <span class="chip" data-site="lever.co">Lever</span>
+    </div>
+
+    <div class="toggle-row">
+      <label class="toggle">
+        <input type="checkbox" id="autoApplyToggle">
+        <span class="slider"></span>
+      </label>
+      <span class="toggle-label">Auto-apply to jobs</span>
+      <span class="toggle-warn" id="autoApplyWarn" hidden>⚠ Will submit real applications</span>
+    </div>
+
+    <div class="log-box" id="logBox">
+      <div class="log-inner" id="logInner"></div>
+    </div>
+
+    <!-- divider -->
+    <div class="divider">or upload existing data</div>
+
+    <div class="upload-row">
+      <label class="btn btn-ghost" style="cursor:pointer">
+        ↑ Upload applied.json
+        <input type="file" id="fileInput" accept=".json" style="display:none">
+      </label>
+      <span class="mono" id="uploadMsg" style="font-size:12px"></span>
+    </div>
   </div>
 
   <!-- Stat tiles -->
   <div class="tiles">
-    <div class="tile">
-      <div class="tile-label">Total Found</div>
-      <div class="tile-value" id="statTotal">—</div>
-      <div class="tile-sub">across all sources</div>
-    </div>
-    <div class="tile applied">
-      <div class="tile-label">Applied</div>
-      <div class="tile-value" id="statApplied">—</div>
-      <div class="tile-sub">submitted applications</div>
-    </div>
-    <div class="tile skipped">
-      <div class="tile-label">Skipped</div>
-      <div class="tile-value" id="statSkipped">—</div>
-      <div class="tile-sub">not auto-applied</div>
-    </div>
-    <div class="tile failed">
-      <div class="tile-label">Failed</div>
-      <div class="tile-value" id="statFailed">—</div>
-      <div class="tile-sub">errors during apply</div>
-    </div>
-    <div class="tile">
-      <div class="tile-label">Already Applied</div>
-      <div class="tile-value" id="statDup">—</div>
-      <div class="tile-sub">duplicates skipped</div>
-    </div>
+    <div class="tile"><div class="tile-label">Total Found</div><div class="tile-value" id="statTotal">—</div><div class="tile-sub">all sources</div></div>
+    <div class="tile applied"><div class="tile-label">Applied</div><div class="tile-value" id="statApplied">—</div><div class="tile-sub">submitted</div></div>
+    <div class="tile skipped"><div class="tile-label">Skipped</div><div class="tile-value" id="statSkipped">—</div><div class="tile-sub">not auto-applied</div></div>
+    <div class="tile failed"><div class="tile-label">Failed</div><div class="tile-value" id="statFailed">—</div><div class="tile-sub">errors</div></div>
+    <div class="tile"><div class="tile-label">Already Applied</div><div class="tile-value" id="statDup">—</div><div class="tile-sub">duplicates</div></div>
   </div>
 
   <!-- Charts -->
   <div class="charts">
-    <div class="card">
-      <h2>By Status</h2>
-      <div class="chart-wrap donut">
-        <canvas id="statusChart" height="220"></canvas>
-      </div>
-    </div>
-    <div class="card">
-      <h2>By Source</h2>
-      <div class="chart-wrap">
-        <canvas id="sourceChart" height="220"></canvas>
-      </div>
-    </div>
+    <div class="card"><h2>By Status</h2><div class="chart-wrap donut"><canvas id="statusChart" height="220"></canvas></div></div>
+    <div class="card"><h2>By Source</h2><div class="chart-wrap"><canvas id="sourceChart" height="220"></canvas></div></div>
   </div>
 
-  <!-- Jobs table -->
+  <!-- Table -->
   <div class="table-card">
     <div class="table-header">
       <h2>All Jobs</h2>
@@ -317,20 +237,9 @@ tbody td { padding: 10px 16px; font-size: 13px; vertical-align: middle; }
     </div>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>Job</th>
-            <th>Source</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th>Date</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Job</th><th>Source</th><th>Location</th><th>Status</th><th>Date</th></tr></thead>
         <tbody id="jobsTable">
-          <tr><td colspan="5" class="empty">
-            <strong>No data yet</strong>
-            <p>Upload your <span class="mono">data/applied.json</span> file above</p>
-          </td></tr>
+          <tr><td colspan="5" class="empty"><strong>No data yet</strong>Enter a site above and start crawling</td></tr>
         </tbody>
       </table>
     </div>
@@ -339,101 +248,84 @@ tbody td { padding: 10px 16px; font-size: 13px; vertical-align: middle; }
 
 <script>
 const API = 'http://localhost:3000';
-let allJobs = [];
-let statusChart = null;
-let sourceChart = null;
-let activeFilter = 'all';
+let allJobs = [], statusChart = null, sourceChart = null, activeFilter = 'all';
+let evtSource = null;
 
 // ── theme ────────────────────────────────────────────────
 const themeBtn = document.getElementById('themeToggle');
 let theme = (() => { try { return localStorage.getItem('theme') || 'system'; } catch { return 'system'; } })();
 applyTheme(theme);
-
 function applyTheme(t) {
   theme = t;
-  if (t === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); themeBtn.textContent = '☀️'; }
-  else if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeBtn.textContent = '🌙'; }
+  if (t === 'dark') { document.documentElement.setAttribute('data-theme','dark'); themeBtn.textContent='☀️'; }
+  else if (t === 'light') { document.documentElement.setAttribute('data-theme','light'); themeBtn.textContent='🌙'; }
   else { document.documentElement.removeAttribute('data-theme');
-    themeBtn.textContent = window.matchMedia('(prefers-color-scheme: dark)').matches ? '☀️' : '🌙'; }
+    themeBtn.textContent = window.matchMedia('(prefers-color-scheme:dark)').matches ? '☀️' : '🌙'; }
   try { localStorage.setItem('theme', t); } catch {}
+  if (statusChart || sourceChart) setTimeout(() => { if (allJobs.length) loadStats(); }, 50);
 }
 themeBtn.addEventListener('click', () => applyTheme(theme === 'dark' ? 'light' : 'dark'));
 
+// ── site chips ───────────────────────────────────────────
+document.getElementById('siteChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  document.getElementById('siteInput').value = chip.dataset.site;
+});
+
+// ── auto-apply toggle ────────────────────────────────────
+const autoApplyToggle = document.getElementById('autoApplyToggle');
+const autoApplyWarn = document.getElementById('autoApplyWarn');
+autoApplyToggle.addEventListener('change', () => {
+  autoApplyWarn.hidden = !autoApplyToggle.checked;
+});
+
 // ── colors ───────────────────────────────────────────────
 function cssVar(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
-const STATUS_COLORS = {
-  applied:        () => cssVar('--green'),
-  skipped:        () => cssVar('--amber'),
-  failed:         () => cssVar('--red'),
-  already_applied:() => cssVar('--blue'),
-};
+const STATUS_COLORS = { applied: ()=>cssVar('--green'), skipped: ()=>cssVar('--amber'), failed: ()=>cssVar('--red'), already_applied: ()=>cssVar('--blue') };
 const SOURCE_PALETTE = ['#7577f8','#22c55e','#f59e0b','#ef4444','#38bdf8','#a78bfa','#fb923c'];
 
-// ── chart helpers ────────────────────────────────────────
-function makeDonut(canvasId, labels, data, colors) {
-  const ctx = document.getElementById(canvasId);
+// ── charts ───────────────────────────────────────────────
+function makeDonut(labels, data, colors) {
+  const ctx = document.getElementById('statusChart');
   if (statusChart) { statusChart.destroy(); statusChart = null; }
+  if (!data.some(d => d > 0)) return;
   statusChart = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2,
-      borderColor: cssVar('--surface'), hoverOffset: 4 }] },
-    options: {
-      cutout: '68%', responsive: true,
-      plugins: {
-        legend: { position: 'bottom', labels: { color: cssVar('--fg-muted'), font: { size: 12, family: 'Inter' },
-          padding: 12, boxWidth: 10, boxHeight: 10 } },
-        tooltip: { callbacks: { label: (c) => ` ${c.label}: ${c.raw}` } }
-      }
-    }
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: cssVar('--surface'), hoverOffset: 4 }] },
+    options: { cutout: '68%', responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { color: cssVar('--fg-muted'), font: { size: 12, family: 'Inter' }, padding: 10, boxWidth: 10, boxHeight: 10 } } } }
   });
 }
-
-function makeBar(canvasId, labels, data) {
-  const ctx = document.getElementById(canvasId);
+function makeBar(labels, data) {
+  const ctx = document.getElementById('sourceChart');
   if (sourceChart) { sourceChart.destroy(); sourceChart = null; }
+  if (!labels.length) return;
   sourceChart = new Chart(ctx, {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        backgroundColor: SOURCE_PALETTE.slice(0, labels.length),
-        borderRadius: 6,
-        borderSkipped: false,
-      }]
-    },
-    options: {
-      responsive: true, indexAxis: 'y',
-      plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: (c) => ` ${c.raw} jobs` } } },
+    data: { labels, datasets: [{ data, backgroundColor: SOURCE_PALETTE.slice(0, labels.length), borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, indexAxis: 'y',
+      plugins: { legend: { display: false } },
       scales: {
-        x: { grid: { color: cssVar('--border') }, ticks: { color: cssVar('--fg-muted'), font: { size: 11 } },
-          beginAtZero: true },
+        x: { grid: { color: cssVar('--border') }, ticks: { color: cssVar('--fg-muted'), font: { size: 11 } }, beginAtZero: true },
         y: { grid: { display: false }, ticks: { color: cssVar('--fg'), font: { size: 12 } } }
-      }
-    }
+      } }
   });
 }
 
-// ── render ───────────────────────────────────────────────
+// ── render stats ─────────────────────────────────────────
 function render(stats) {
-  // tiles
-  document.getElementById('statTotal').textContent   = stats.total;
-  document.getElementById('statApplied').textContent = stats.byStatus.applied   || 0;
-  document.getElementById('statSkipped').textContent = stats.byStatus.skipped   || 0;
-  document.getElementById('statFailed').textContent  = stats.byStatus.failed    || 0;
+  document.getElementById('statTotal').textContent = stats.total;
+  document.getElementById('statApplied').textContent = stats.byStatus.applied || 0;
+  document.getElementById('statSkipped').textContent = stats.byStatus.skipped || 0;
+  document.getElementById('statFailed').textContent  = stats.byStatus.failed  || 0;
   document.getElementById('statDup').textContent     = stats.byStatus.already_applied || 0;
-
-  // status donut
   const sKeys = Object.keys(stats.byStatus).filter(k => stats.byStatus[k] > 0);
-  makeDonut('statusChart', sKeys, sKeys.map(k => stats.byStatus[k]),
-    sKeys.map(k => STATUS_COLORS[k]?.() || '#888'));
-
-  // source bar
+  makeDonut(sKeys, sKeys.map(k => stats.byStatus[k]), sKeys.map(k => STATUS_COLORS[k]?.() || '#888'));
   const srcKeys = Object.keys(stats.bySource).sort((a,b) => stats.bySource[b]-stats.bySource[a]);
-  makeBar('sourceChart', srcKeys, srcKeys.map(k => stats.bySource[k]));
-
-  // table
+  makeBar(srcKeys, srcKeys.map(k => stats.bySource[k]));
   allJobs = stats.all || [];
   renderTable(activeFilter);
 }
@@ -442,40 +334,101 @@ function renderTable(filter) {
   activeFilter = filter;
   const rows = filter === 'all' ? allJobs : allJobs.filter(j => j.status === filter);
   const tbody = document.getElementById('jobsTable');
-
-  if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty">
-      <strong>No ${filter === 'all' ? '' : filter + ' '}jobs found</strong>
-      <p>Try a different filter</p></td></tr>`;
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty"><strong>No ${filter==='all'?'':filter+' '}jobs</strong>Try a different filter</td></tr>`;
     return;
   }
-
   tbody.innerHTML = rows.map(j => {
-    const badge = j.status === 'already_applied'
-      ? `<span class="badge badge-already">Already</span>`
-      : `<span class="badge badge-${j.status}">${j.status}</span>`;
-    const date = j.appliedAt ? new Date(j.appliedAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short'}) : '—';
-    const titleLink = j.url
-      ? `<a href="${j.url}" target="_blank" rel="noopener">${esc(j.title)}</a>`
-      : esc(j.title);
-    return `<tr>
-      <td>
-        <div class="job-title">${titleLink}</div>
-        <div class="job-company">${esc(j.company)}</div>
-      </td>
+    const badge = j.status === 'already_applied' ? `<span class="badge badge-already">Already</span>` : `<span class="badge badge-${j.status}">${j.status}</span>`;
+    const date = j.appliedAt ? new Date(j.appliedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—';
+    const link = j.url ? `<a href="${j.url}" target="_blank" rel="noopener">${esc(j.title)}</a>` : esc(j.title);
+    return `<tr><td><div class="job-title">${link}</div><div class="job-company">${esc(j.company)}</div></td>
       <td><span class="badge badge-source">${esc(j.source)}</span></td>
-      <td class="job-location">${esc(j.location || '—')}</td>
-      <td>${badge}</td>
-      <td class="mono">${date}</td>
-    </tr>`;
+      <td style="color:var(--fg-muted);font-size:12px">${esc(j.location||'—')}</td>
+      <td>${badge}</td><td class="mono">${date}</td></tr>`;
   }).join('');
 }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function esc(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── log ──────────────────────────────────────────────────
+function addLog(msg, type = '') {
+  const box = document.getElementById('logBox');
+  const inner = document.getElementById('logInner');
+  box.classList.add('open');
+  const line = document.createElement('div');
+  line.className = `log-line ${type}`;
+  const ts = new Date().toLocaleTimeString('en-IN', { hour12: false });
+  line.textContent = `[${ts}] ${msg}`;
+  inner.appendChild(line);
+  inner.scrollTop = inner.scrollHeight;
+}
+function clearLog() {
+  document.getElementById('logInner').innerHTML = '';
+  document.getElementById('logBox').classList.remove('open');
 }
 
-// ── filters ──────────────────────────────────────────────
+// ── SSE ──────────────────────────────────────────────────
+function connectSSE() {
+  if (evtSource) { evtSource.close(); evtSource = null; }
+  evtSource = new EventSource(`${API}/api/events`);
+  evtSource.addEventListener('log', e => {
+    const { msg } = JSON.parse(e.data);
+    const type = msg.startsWith('Done') || msg.startsWith('✓') ? 'ok' : msg.startsWith('Error') ? 'err' : '';
+    addLog(msg, type);
+  });
+  evtSource.addEventListener('done', e => {
+    const { stats } = JSON.parse(e.data);
+    if (stats) render(stats);
+    setCrawling(false);
+  });
+  evtSource.addEventListener('error', e => {
+    try { const { msg } = JSON.parse(e.data); addLog(msg, 'err'); } catch {}
+    setCrawling(false);
+  });
+  evtSource.addEventListener('status', e => {
+    const { running } = JSON.parse(e.data);
+    setCrawling(running);
+  });
+}
+
+// ── crawl UI state ───────────────────────────────────────
+const crawlBtn = document.getElementById('crawlBtn');
+const stopBtn  = document.getElementById('stopBtn');
+function setCrawling(running) {
+  crawlBtn.disabled = running;
+  crawlBtn.textContent = running ? '⏳ Crawling…' : '▶ Start Crawl';
+  stopBtn.style.display = running ? '' : 'none';
+}
+
+// ── start crawl ──────────────────────────────────────────
+crawlBtn.addEventListener('click', async () => {
+  const site = document.getElementById('siteInput').value.trim();
+  if (!site) { addLog('Please enter a site URL or pick one above', 'err'); return; }
+  const autoApply = document.getElementById('autoApplyToggle').checked;
+  clearLog();
+  addLog(`Connecting to ${site}…`);
+  try {
+    const res = await fetch(`${API}/api/crawl`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ site, autoApply })
+    });
+    const json = await res.json();
+    if (!res.ok) { addLog(json.error, 'err'); return; }
+    addLog(`Crawler started for ${json.source}`);
+    setCrawling(true);
+    connectSSE();
+  } catch {
+    addLog('Cannot reach server — make sure you ran: npm run server', 'err');
+  }
+});
+
+stopBtn.addEventListener('click', () => {
+  if (evtSource) { evtSource.close(); evtSource = null; }
+  setCrawling(false);
+  addLog('Crawl stopped by user');
+});
+
+// ── filter buttons ───────────────────────────────────────
 document.getElementById('filters').addEventListener('click', e => {
   const btn = e.target.closest('.filter-btn');
   if (!btn) return;
@@ -484,71 +437,54 @@ document.getElementById('filters').addEventListener('click', e => {
   renderTable(btn.dataset.filter);
 });
 
-// ── upload ───────────────────────────────────────────────
-async function uploadFile(file) {
+// ── upload fallback ──────────────────────────────────────
+document.getElementById('fileInput').addEventListener('change', async e => {
+  const file = e.target.files?.[0];
+  if (!file) return;
   const msg = document.getElementById('uploadMsg');
-  if (!file || !file.name.endsWith('.json')) {
-    msg.textContent = 'Please select a .json file'; msg.className = 'upload-msg err'; return;
-  }
-  msg.textContent = 'Uploading…'; msg.className = 'upload-msg';
   try {
     const fd = new FormData(); fd.append('file', file);
     const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
     const json = await res.json();
-    if (!res.ok) throw new Error(json.error || 'Upload failed');
-    msg.textContent = `✓ Loaded ${json.count} jobs`; msg.className = 'upload-msg ok';
+    if (!res.ok) throw new Error(json.error);
+    msg.textContent = `✓ ${json.count} jobs loaded`;
+    msg.style.color = 'var(--green)';
     await loadStats();
-  } catch (err) {
-    // fallback: parse client-side if backend is down
+  } catch {
+    // offline fallback
     try {
       const text = await file.text();
-      const data = JSON.parse(text);
-      parseClientSide(data);
-      msg.textContent = `✓ Loaded ${data.length} jobs (offline mode)`; msg.className = 'upload-msg ok';
-    } catch {
-      msg.textContent = err.message; msg.className = 'upload-msg err';
+      parseClientSide(JSON.parse(text));
+      msg.textContent = `✓ ${JSON.parse(await file.text()).length} jobs (offline)`;
+      msg.style.color = 'var(--green)';
+    } catch (err2) {
+      msg.textContent = err2.message;
+      msg.style.color = 'var(--red)';
     }
   }
-}
+});
 
 function parseClientSide(results) {
-  const byStatus = { applied: 0, skipped: 0, failed: 0, already_applied: 0 };
+  const byStatus = { applied:0, skipped:0, failed:0, already_applied:0 };
   const bySource = {};
   for (const r of results) {
-    byStatus[r.status] = (byStatus[r.status] || 0) + 1;
-    bySource[r.job.source] = (bySource[r.job.source] || 0) + 1;
+    byStatus[r.status] = (byStatus[r.status]||0)+1;
+    bySource[r.job.source] = (bySource[r.job.source]||0)+1;
   }
-  render({
-    total: results.length, byStatus, bySource, byDate: {},
-    all: results.map(r => ({
-      title: r.job.title, company: r.job.company, source: r.job.source,
-      location: r.job.location, url: r.job.url,
-      appliedAt: r.appliedAt || r.job.foundAt, status: r.status, error: r.error
-    }))
-  });
+  render({ total: results.length, byStatus, bySource, byDate: {},
+    all: results.map(r => ({ title:r.job.title, company:r.job.company, source:r.job.source,
+      location:r.job.location, url:r.job.url, appliedAt:r.appliedAt||r.job.foundAt, status:r.status })) });
 }
 
-document.getElementById('fileInput').addEventListener('change', e => {
-  const file = e.target.files?.[0]; if (file) uploadFile(file);
-});
-
-const zone = document.getElementById('uploadZone');
-zone.addEventListener('click', () => document.getElementById('fileInput').click());
-zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
-zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
-zone.addEventListener('drop', e => {
-  e.preventDefault(); zone.classList.remove('drag');
-  const file = e.dataTransfer?.files?.[0]; if (file) uploadFile(file);
-});
-
-// ── initial load from server ─────────────────────────────
+// ── initial load ─────────────────────────────────────────
 async function loadStats() {
   try {
     const res = await fetch(`${API}/api/stats`);
     const stats = await res.json();
     if (stats.total > 0) render(stats);
-  } catch { /* server not running — wait for upload */ }
+    const status = await (await fetch(`${API}/api/crawl/status`)).json();
+    if (status.running) { setCrawling(true); connectSSE(); }
+  } catch {}
 }
-
 loadStats();
 </script>
