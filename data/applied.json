@@ -1,0 +1,665 @@
+[
+  {
+    "job": {
+      "id": "5e9bb813ecf6ac86edb21ff34953e096",
+      "title": "Backend Engineer, Core Technology",
+      "company": "stripe",
+      "location": "US-Remote, Chicago, Seattle, San Francisco",
+      "url": "https://stripe.com/jobs/search?gh_jid=6042172",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "010f1a23968e1478ded6d090fb11de0d",
+      "title": "Backend Engineer, Developer & End-user Experience Platform",
+      "company": "stripe",
+      "location": "SEA, SF, NY, Toronto",
+      "url": "https://stripe.com/jobs/search?gh_jid=7476555",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "5397b261a265b6d2b4899abd1d060069",
+      "title": "Backend Engineer, Developer & End-user Experience Platform",
+      "company": "stripe",
+      "location": "Toronto Canada, San Francisco, Remote in US, Remote in Canada",
+      "url": "https://stripe.com/jobs/search?gh_jid=7292520",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "cc9bf4dd4790ec8b1ca735463bae39ae",
+      "title": "Backend Engineer, Developer SDKs",
+      "company": "stripe",
+      "location": "Toronto, NY, SEA, SF",
+      "url": "https://stripe.com/jobs/search?gh_jid=7557899",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "bb0c6f3a67c331315a12ea0983b9a5a8",
+      "title": "Backend Engineer, Link",
+      "company": "stripe",
+      "location": "NYC, Sea, SF, Tor",
+      "url": "https://stripe.com/jobs/search?gh_jid=8131144",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "4b4978fd5ea3e5a2c4d65828561e0542",
+      "title": "Backend Engineer, Payments & Risk",
+      "company": "stripe",
+      "location": "Toronto, Canada",
+      "url": "https://stripe.com/jobs/search?gh_jid=8260985",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "79bb3c75bab6691670d5af5b233ae375",
+      "title": "Backend Engineer, Privy",
+      "company": "stripe",
+      "location": "NYC-Privy",
+      "url": "https://stripe.com/jobs/search?gh_jid=7235875",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "b66716d1309bee7709b737b94dec9f8c",
+      "title": "Full Stack Engineer, Bridge",
+      "company": "stripe",
+      "location": "San Francisco, NYC",
+      "url": "https://stripe.com/jobs/search?gh_jid=8142764",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "6d4d20501973b3fd38fabd2b56f220b5",
+      "title": "Full Stack Engineer, Builder Experience",
+      "company": "stripe",
+      "location": "San Francisco",
+      "url": "https://stripe.com/jobs/search?gh_jid=8206731",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "4f83b6fe9607bc4bdeaee93c8a53784a",
+      "title": "Full Stack Engineer, Developer & End User Experience Platform",
+      "company": "stripe",
+      "location": "N/A",
+      "url": "https://stripe.com/jobs/search?gh_jid=6567104",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "a8e4c75da136ea5528fadec4d0f80210",
+      "title": "Full Stack Engineer, Enterprise & Ecosystem",
+      "company": "stripe",
+      "location": "N/A",
+      "url": "https://stripe.com/jobs/search?gh_jid=8118929",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "8cd7c19f5ee7fcb69ad25a1c7ee47ec5",
+      "title": "Full Stack Engineer, Enterprise Engineering",
+      "company": "stripe",
+      "location": "N/A",
+      "url": "https://stripe.com/jobs/search?gh_jid=8214616",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "62024fd50b27dc522b8c0effda7e4644",
+      "title": "Full Stack Engineer, Enterprise Engineering",
+      "company": "stripe",
+      "location": "N/A",
+      "url": "https://stripe.com/jobs/search?gh_jid=8214618",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "5f253d525dc2e228281f4efb870fb7fb",
+      "title": "Full Stack Engineer, Link",
+      "company": "stripe",
+      "location": "Toronto",
+      "url": "https://stripe.com/jobs/search?gh_jid=6447175",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "d948b5f1722100aa4407e77b2724d846",
+      "title": "Full Stack Engineer, Money as a Service",
+      "company": "stripe",
+      "location": "N/A",
+      "url": "https://stripe.com/jobs/search?gh_jid=6606581",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "21c1a3c9ec0515d9a5aab19dfe5db2cd",
+      "title": "Full Stack Engineer, Money Movement",
+      "company": "stripe",
+      "location": "London",
+      "url": "https://stripe.com/jobs/search?gh_jid=8226261",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "3fd6d9e8b50b66c37dc309998d883177",
+      "title": "Full Stack Engineer, Revenue",
+      "company": "stripe",
+      "location": "N/A",
+      "url": "https://stripe.com/jobs/search?gh_jid=8234357",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "fbd0b5e1223f098d219839bb9a2743dc",
+      "title": "Full Stack Engineer, Support Experience (Greater China Support)",
+      "company": "stripe",
+      "location": "US",
+      "url": "https://stripe.com/jobs/search?gh_jid=8039548",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "1e961c020ed5d6ef1bdf477ce8254508",
+      "title": "Full Stack Engineer, Web Presence and Platform",
+      "company": "stripe",
+      "location": "N/A",
+      "url": "https://stripe.com/jobs/search?gh_jid=7436086",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "68fa54bc26a562e0943c47eecf44e5d1",
+      "title": "Software Engineer",
+      "company": "stripe",
+      "location": "Chicago, IL",
+      "url": "https://stripe.com/jobs/search?gh_jid=8137972",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "bf860e518b8f498c720c96607a70e822",
+      "title": "Software Engineer",
+      "company": "stripe",
+      "location": "Seattle, WA",
+      "url": "https://stripe.com/jobs/search?gh_jid=8249901",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "b90a9991e901e67b762cb94936fecbc0",
+      "title": "Software Engineer",
+      "company": "stripe",
+      "location": "Seattle, WA",
+      "url": "https://stripe.com/jobs/search?gh_jid=8267736",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "040c886c1a520cc5cab912b414beaa1a",
+      "title": "Software Engineer",
+      "company": "stripe",
+      "location": "South San Francisco, CA",
+      "url": "https://stripe.com/jobs/search?gh_jid=8314283",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "4b2647cb3f3905580543cd111f51fed0",
+      "title": "Software Engineer, Backend",
+      "company": "stripe",
+      "location": "Seattle, WA",
+      "url": "https://stripe.com/jobs/search?gh_jid=8198280",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "5d7367032fa0bb3e4a1e8cd1a1e4f778",
+      "title": "Software Engineer, Bridge",
+      "company": "stripe",
+      "location": "San Francisco, NY, Seattle",
+      "url": "https://stripe.com/jobs/search?gh_jid=7277110",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "8924cc170632a850fe58f25541e0ba72",
+      "title": "Software Engineer, Connect Tax Reporting",
+      "company": "stripe",
+      "location": "Bucharest, Romania",
+      "url": "https://stripe.com/jobs/search?gh_jid=8078337",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "46c1def89023b43f284ffd858a83a2f6",
+      "title": "Software Engineer, Core Infrastructure",
+      "company": "stripe",
+      "location": "Sydney, Australia",
+      "url": "https://stripe.com/jobs/search?gh_jid=7975725",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "e2a5950f75804e76d55757e362d41d50",
+      "title": "Software Engineer, Data Orchestration",
+      "company": "stripe",
+      "location": "N/A",
+      "url": "https://stripe.com/jobs/search?gh_jid=7230670",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "adbad94f507ac02cb216c50d4e7e9028",
+      "title": "Software Engineer, Early Career — Immediate Start",
+      "company": "stripe",
+      "location": "San Francisco, Seattle, New York",
+      "url": "https://stripe.com/jobs/search?gh_jid=8212508",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "473076ad11030bb6dd78028612f53d08",
+      "title": "Software Engineer, Early Career — Immediate Start",
+      "company": "stripe",
+      "location": "Toronto",
+      "url": "https://stripe.com/jobs/search?gh_jid=8212517",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "c3b9fb3a50ea3bc461efe330cb20a475",
+      "title": "Software Engineer, High Availability and Disaster Recovery",
+      "company": "stripe",
+      "location": "Seattle, WA",
+      "url": "https://stripe.com/jobs/search?gh_jid=8197135",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "0f7ffdc156a3168450f97e04009fe7f5",
+      "title": "Software Engineer, Metronome Infrastructure",
+      "company": "stripe",
+      "location": "Toronto, Vancouver, Canada-Remote",
+      "url": "https://stripe.com/jobs/search?gh_jid=8231439",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "2ffc8bbf5ce2040abd5da5eea4afdf7d",
+      "title": "Software Engineer, Money Movement ",
+      "company": "stripe",
+      "location": "London",
+      "url": "https://stripe.com/jobs/search?gh_jid=7208537",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "afebe2623115178c1fd7b6165140e49c",
+      "title": "Software Engineer, New Grad",
+      "company": "stripe",
+      "location": "Singapore",
+      "url": "https://stripe.com/jobs/search?gh_jid=8160776",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "6f72dbb7f9c616738c8a337ee45bbd4f",
+      "title": "Software Engineer, New Grad",
+      "company": "stripe",
+      "location": "Toronto",
+      "url": "https://stripe.com/jobs/search?gh_jid=8157838",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "54ac63f5ace0f4b3f17bb8be4016795c",
+      "title": "Software Engineer, New Grad",
+      "company": "stripe",
+      "location": "London",
+      "url": "https://stripe.com/jobs/search?gh_jid=8130930",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "097a258229fe86855a37843a790e5bd7",
+      "title": "Software Engineer, New Grad",
+      "company": "stripe",
+      "location": "Bucharest",
+      "url": "https://stripe.com/jobs/search?gh_jid=8130922",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "663fe60119ad41af5ef7538601ea725f",
+      "title": "Software Engineer, New Grad",
+      "company": "stripe",
+      "location": "Dublin",
+      "url": "https://stripe.com/jobs/search?gh_jid=8130881",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "8db805967b9065ab0fd74eb622fc33f0",
+      "title": "Software Engineer, New Grad",
+      "company": "stripe",
+      "location": "San Francisco, Seattle, New York",
+      "url": "https://stripe.com/jobs/search?gh_jid=8128744",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "91cf1df0594f023a5c34276aff2c60a0",
+      "title": "Software Engineer, New Grad - Frontend",
+      "company": "stripe",
+      "location": "Barcelona",
+      "url": "https://stripe.com/jobs/search?gh_jid=8130927",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "50548de13dfe0b5dc9a91f637e1836b3",
+      "title": "Software Engineer, Online Database Infrastructure",
+      "company": "stripe",
+      "location": "Seattle, WA",
+      "url": "https://stripe.com/jobs/search?gh_jid=8197891",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "a1ee03feee0fe855943f4627744029f9",
+      "title": "Software Engineer, Payin",
+      "company": "stripe",
+      "location": "Bengaluru",
+      "url": "https://stripe.com/jobs/search?gh_jid=8185012",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "7e33050424b7ebdade77c3b0882543e4",
+      "title": "Software Engineer, Payins Card Networks",
+      "company": "stripe",
+      "location": "Seattle, WA",
+      "url": "https://stripe.com/jobs/search?gh_jid=8198207",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "87bfc9c67ff46d7ac170ae1723d64530",
+      "title": "Software Engineer, Payments and Risk",
+      "company": "stripe",
+      "location": "Dublin, Ireland",
+      "url": "https://stripe.com/jobs/search?gh_jid=6717520",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "d4062ced2b1f81a2af0b141f247ec6cc",
+      "title": "Software Engineer, Resource Automation",
+      "company": "stripe",
+      "location": "South San Francisco, CA",
+      "url": "https://stripe.com/jobs/search?gh_jid=8314235",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "cebad328975ee7744013d20ff65cfd1c",
+      "title": "Software Engineer, Revenue and Financial Automation",
+      "company": "stripe",
+      "location": "San Francisco, New York City, Seattle, Chicago, US-Remote",
+      "url": "https://stripe.com/jobs/search?gh_jid=8127182",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "cd6db8cb1da581143589d30fd0b6542f",
+      "title": "Software Engineer, Secrets Infrastructure",
+      "company": "stripe",
+      "location": "na",
+      "url": "https://stripe.com/jobs/search?gh_jid=7396679",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "f36cdcb9ff16bc4aec88bcda22038153",
+      "title": "Software Engineer, Security Business Enablement",
+      "company": "stripe",
+      "location": "Dublin",
+      "url": "https://stripe.com/jobs/search?gh_jid=8175656",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "80af5966768e01c071a5b7e098001b76",
+      "title": "Software Engineer, Storage Integrations",
+      "company": "stripe",
+      "location": "Bucharest",
+      "url": "https://stripe.com/jobs/search?gh_jid=8231178",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "2672647155bdc1406dff1fa0d3c0e86d",
+      "title": "Software Engineer, Stripe Data Pipeline",
+      "company": "stripe",
+      "location": "Bangalore",
+      "url": "https://stripe.com/jobs/search?gh_jid=8209970",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:05.214Z"
+    },
+    "status": "skipped"
+  },
+  {
+    "job": {
+      "id": "5e9bb813ecf6ac86edb21ff34953e096",
+      "title": "Backend Engineer, Core Technology",
+      "company": "stripe",
+      "location": "US-Remote, Chicago, Seattle, San Francisco",
+      "url": "https://stripe.com/jobs/search?gh_jid=6042172",
+      "source": "greenhouse",
+      "easyApply": true,
+      "foundAt": "2026-10-22T23:23:12.132Z"
+    },
+    "status": "skipped"
+  }
+]
