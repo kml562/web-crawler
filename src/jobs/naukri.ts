@@ -366,10 +366,11 @@ export class NaukriScraper extends BaseScraper {
   private async applyViaAPI(job: Job): Promise<ApplicationResult> {
     try {
       const sid = Date.now().toString();
+      this.log(`API apply → jobId: ${job.naukriJobId} | ${job.title} @ ${job.company}`);
 
       const applyBody = {
         strJobsarr:       [job.naukriJobId!],
-        logstr:           `--drecomm_profile-1-F-0-1--${sid}-`,
+        logstr:           `--jobSearch-1-F-0-1--${sid}-`,
         flowtype:         "show",
         crossdomain:      true,
         jquery:           1,
@@ -379,7 +380,7 @@ export class NaukriScraper extends BaseScraper {
         optional_skills:  job.optionalSkills  ?? [],
         applyTypeId:      "107",
         closebtn:         "y",
-        applySrc:         "drecomm_profile",
+        applySrc:         "jobSearch",
         sid,
         mid:              "",
       };
@@ -388,36 +389,50 @@ export class NaukriScraper extends BaseScraper {
         headers: this.applyHeaders(), timeout: 15000,
       });
 
-      const applyData = applyRes.data?.data ?? applyRes.data;
+      // Log the raw response so we can debug
+      const rawData = applyRes.data;
+      this.log(`API response [${applyRes.status}]: ${JSON.stringify(rawData).slice(0, 300)}`);
+
+      const applyData = (rawData as Record<string, unknown>)?.["data"] ?? rawData as Record<string, unknown>;
+
+      // Check for explicit error message in body
+      const errMsg = (applyData as Record<string, unknown>)?.["message"] as string | undefined;
+      if (errMsg && /already applied|error|failed|invalid/i.test(errMsg)) {
+        if (/already applied/i.test(errMsg)) {
+          return { job, status: "already_applied" };
+        }
+        return { job, status: "failed", error: `API rejected: ${errMsg}` };
+      }
 
       // Check if chatbot screening is required
-      const needsChatbot = (applyData as Record<string, unknown>)?.["isChatBot"] ?? false;
-
+      const needsChatbot = !!(applyData as Record<string, unknown>)?.["isChatBot"];
       if (needsChatbot) {
-        this.log(`Chatbot screening triggered for: ${job.title}`);
+        this.log(`Chatbot screening for: ${job.title}`);
         const chatbotOk = await this.handleChatbot(job.naukriJobId!);
         if (!chatbotOk) {
-          return { job, status: "skipped", error: "Chatbot screening could not be completed" };
+          return { job, status: "skipped", error: "Chatbot could not be completed" };
         }
       }
 
       this.log(`✓ Applied via API: ${job.title} @ ${job.company}`);
-      // Pace requests to avoid Naukri rate-limiting
       await delay(2000, 4000);
       return { job, status: "applied", appliedAt: new Date().toISOString() };
 
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      // If 401/403, token expired — fall back to browser
-      if (axios.isAxiosError(err) && (err.response?.status === 401 || err.response?.status === 403)) {
-        this.log("Token expired, falling back to browser apply");
-        return this.applyViaBrowser(job);
-      }
-      // Log the actual HTTP status for debugging
       if (axios.isAxiosError(err) && err.response) {
-        this.log(`API error ${err.response.status}: ${JSON.stringify(err.response.data).slice(0, 200)}`);
+        const status = err.response.status;
+        const body   = JSON.stringify(err.response.data).slice(0, 300);
+        this.log(`API error HTTP ${status}: ${body}`);
+        if (status === 401 || status === 403) {
+          this.log("Token expired — falling back to browser apply");
+          return this.applyViaBrowser(job);
+        }
       }
-      return { job, status: "failed", error: `API apply failed: ${msg}` };
+      const msg = err instanceof Error ? err.message : String(err);
+      this.log(`API apply threw: ${msg}`);
+      // Fall back to browser instead of failing hard
+      this.log("Falling back to browser apply");
+      return this.applyViaBrowser(job);
     }
   }
 
@@ -569,34 +584,132 @@ export class NaukriScraper extends BaseScraper {
     return options[0] ?? { id: "-1", text: "" };
   }
 
-  // ── Browser fallback (original Playwright approach) ───────
+  // ── Browser apply (Playwright) ───────────────────────────
   private async applyViaBrowser(job: Job): Promise<ApplicationResult> {
     try {
-      await this.page.goto(job.url, { waitUntil: "load", timeout: 30000 });
-      await delay(1500, 2500);
+      this.log(`Browser apply → ${job.url}`);
+      await this.page.goto(job.url, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await delay(2000, 3000);
+      this.pagesVisited++;
 
-      const externalBtn = await this.page.$('a[class*="company-site"], button:has-text("Apply on Company Website")');
-      if (externalBtn) return { job, status: "skipped", error: "External company website apply" };
+      const landedUrl = this.page.url();
+      this.log(`Page loaded: ${landedUrl}`);
 
-      const applyBtn = await this.page.$(
-        '#apply-button, [id*="apply-button"], button[class*="applyBtn"]:not([class*="external"]), div[class*="apply-button"] button'
-      );
-      if (!applyBtn) return { job, status: "skipped", error: "No easy-apply button found" };
+      // Immediately check for external ATS redirect
+      if (this.isExternalATS()) {
+        return { job, status: "skipped", error: `External ATS: ${landedUrl}` };
+      }
 
+      // Skip if "Apply on company website" present
+      const externalApply = await this.page.$('a:has-text("Apply on company website"), button:has-text("Apply on Company Website"), a[class*="company-site"]');
+      if (externalApply) {
+        return { job, status: "skipped", error: "Apply on company website only" };
+      }
+
+      // ── Find apply button ────────────────────────────────
+      const applySelectors = [
+        "#apply-button",
+        'button[id="apply-button"]',
+        'a[id="apply-button"]',
+        'button[class*="apply-button"]:not([disabled])',
+        'div.apply-button button',
+        'div.apply-button a',
+        'button:has-text("Apply"):visible',
+        'a.btn:has-text("Apply"):visible',
+      ];
+
+      let applyBtn = null;
+      let usedSel  = "";
+      for (const sel of applySelectors) {
+        try {
+          const el = await this.page.$(sel);
+          if (el && await el.isVisible()) { applyBtn = el; usedSel = sel; break; }
+        } catch { /* selector might not be valid */ }
+      }
+
+      if (!applyBtn) {
+        // Debug: log all visible buttons so we can improve selectors
+        const visibleBtns = await this.page.$$eval(
+          "button:not([hidden]), a[class*='btn']:not([hidden])",
+          (els) => els.slice(0, 15).map((e) => `${e.tagName}#${(e as HTMLElement).id || ""} "${e.textContent?.trim().slice(0, 40)}"`)
+        ).catch(() => []);
+        this.log(`No apply button — visible buttons: ${visibleBtns.join(" | ")}`);
+        return { job, status: "skipped", error: "No apply button found" };
+      }
+
+      this.log(`Clicking apply button (${usedSel})`);
       await applyBtn.click();
       await delay(2000, 3000);
+
+      // ── Handle Naukri quick-apply modal ─────────────────
+      // After clicking, Naukri opens a modal/overlay with screening questions
+      const modalSels = [
+        'div[class*="apply-popup"]',
+        'div[class*="quickApply"]',
+        'div[class*="applyModal"]',
+        'div[class*="modal"][class*="apply"]',
+        'div[role="dialog"]',
+        '.chatbot-container',
+        'div[class*="overlay"]',
+      ];
+      for (const sel of modalSels) {
+        const modal = await this.page.$(sel).catch(() => null);
+        if (modal && await modal.isVisible().catch(() => false)) {
+          this.log(`Modal opened: ${sel}`);
+          break;
+        }
+      }
+
+      // Fill any screening questions in the modal
       await this.fillScreeningQuestions();
-      await delay(500, 1000);
+      await delay(800, 1200);
 
-      const confirmBtn = await this.page.$('button[class*="applyBtn"], button:has-text("Apply"), button:has-text("Submit")');
-      if (confirmBtn) { await confirmBtn.click(); await delay(1500, 2500); }
+      // ── Find and click the final Submit/Apply button ─────
+      const submitSelectors = [
+        'button[type="submit"]:visible',
+        'button:has-text("Submit"):visible',
+        'button:has-text("Apply"):not([id="apply-button"]):visible',
+        'button:has-text("Confirm"):visible',
+        'a:has-text("Apply now"):visible',
+        'input[type="submit"]:visible',
+      ];
+      for (const sel of submitSelectors) {
+        try {
+          const btn = await this.page.$(sel);
+          if (btn && await btn.isVisible()) {
+            this.log(`Clicking submit: ${sel}`);
+            await btn.click();
+            await delay(2000, 3000);
+            break;
+          }
+        } catch { /* skip invalid selectors */ }
+      }
 
-      if (this.isExternalATS()) return { job, status: "skipped", error: "Redirected to external ATS" };
+      // Check for external ATS after clicking (some jobs redirect mid-flow)
+      if (this.isExternalATS()) {
+        return { job, status: "skipped", error: `Redirected to external ATS after apply` };
+      }
 
+      // ── Detect success ────────────────────────────────────
+      const afterUrl    = this.page.url();
+      const urlChanged  = afterUrl !== landedUrl;
+      const successText = await this.page.$eval(
+        "body",
+        (b) => b.innerText
+      ).then((t) => /applied successfully|application submitted|you.ve applied|already applied/i.test(t)).catch(() => false);
+
+      if (/already applied/i.test(await this.page.$eval("body", (b) => b.innerText).catch(() => ""))) {
+        return { job, status: "already_applied" };
+      }
+
+      this.log(`After apply — URL: ${afterUrl} | success text: ${successText} | url changed: ${urlChanged}`);
       this.log(`✓ Applied via browser: ${job.title} @ ${job.company}`);
       return { job, status: "applied", appliedAt: new Date().toISOString() };
+
     } catch (err) {
-      return { job, status: "failed", error: err instanceof Error ? err.message : String(err) };
+      const msg = err instanceof Error ? err.message : String(err);
+      this.log(`Browser apply error: ${msg}`);
+      return { job, status: "failed", error: msg };
     }
   }
 
