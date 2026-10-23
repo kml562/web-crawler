@@ -11,8 +11,17 @@ import fs from "fs";
 import { cookiePath } from "../auth/loginManager.js";
 import { logger } from "../utils/logger.js";
 
-export const FLOW_PATH = "data/naukri_apply_flow.json";
+export const FLOW_PATH            = "data/naukri_apply_flow.json";
+export const DISCOVERED_JOBS_PATH = "data/naukri_discovered_jobs.json";
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36";
+
+export interface DiscoveredJob {
+  title:   string;
+  company: string;
+  location: string;
+  url:     string;
+  jobId:   string;
+}
 
 export type RecordedStep =
   | { type: "navigate"; url: string }
@@ -234,6 +243,74 @@ export class NaukriRecorder {
       fs.mkdirSync("data", { recursive: true });
       fs.writeFileSync(cookiePath("naukri"), JSON.stringify(cookies, null, 2));
     } catch { /* context already gone */ }
+  }
+
+  // Search Naukri using the recorder's own open browser and capture job links.
+  // Exactly mirrors the Python bot: navigates each keyword page, scrapes
+  // div.srp-jobtuple-wrapper a.title — returns the number of jobs saved.
+  async searchAndCapture(
+    keywords: string[],
+    pagesPerKeyword: number,
+    onLog: (msg: string) => void
+  ): Promise<DiscoveredJob[]> {
+    const pages = await this.context.pages();
+    const page  = pages[0]; // use the tab that is already open on Naukri
+
+    const allJobs: DiscoveredJob[] = [];
+
+    for (const keyword of keywords) {
+      const slug = keyword
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, "")
+        .trim()
+        .replace(/\s+/g, "-") + "-jobs";
+
+      for (let pageNo = 1; pageNo <= pagesPerKeyword; pageNo++) {
+        const suffix = pageNo === 1 ? "" : `-${pageNo}`;
+        const url = `https://www.naukri.com/${slug}${suffix}?k=${encodeURIComponent(keyword)}&nignbevent_src=jobsearchDeskGNB`;
+
+        onLog(`Searching: "${keyword}" page ${pageNo}…`);
+        try {
+          await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+        } catch {
+          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 }).catch(() => {});
+        }
+        // Wait for React to render job cards
+        await page.waitForSelector("div.srp-jobtuple-wrapper, div.cust-job-tuple", { timeout: 8000 }).catch(() => {});
+
+        const jobs = await page.$$eval(
+          "div.srp-jobtuple-wrapper, div.cust-job-tuple",
+          (wrappers: Element[]) => wrappers.map((w) => {
+            const titleEl   = w.querySelector("a.title") as HTMLAnchorElement | null;
+            const companyEl = w.querySelector("a.subTitle, .subTitle") as HTMLElement | null;
+            const locEl     = w.querySelector("span.locWdth, li.fleft.grey-text, span.loc, .location") as HTMLElement | null;
+            const href      = titleEl?.href ?? titleEl?.getAttribute("href") ?? "";
+            const full      = href.startsWith("/") ? "https://www.naukri.com" + href : href;
+            const idMatch   = full.match(/jid-(\d+)/) ?? full.match(/-(\d{8,})[\/?]/);
+            return {
+              title:    titleEl?.textContent?.trim()   ?? "",
+              company:  companyEl?.textContent?.trim() ?? "",
+              location: locEl?.textContent?.trim()     ?? "",
+              url:      full,
+              jobId:    idMatch?.[1] ?? "",
+            };
+          }).filter((j: { title: string; url: string }) => j.title && j.url)
+        ).catch(() => []) as DiscoveredJob[];
+
+        onLog(`  → ${jobs.length} jobs found on page ${pageNo}`);
+        allJobs.push(...jobs);
+      }
+    }
+
+    // Deduplicate by URL
+    const seen  = new Set<string>();
+    const unique = allJobs.filter((j) => { if (seen.has(j.url)) return false; seen.add(j.url); return true; });
+
+    fs.mkdirSync("data", { recursive: true });
+    fs.writeFileSync(DISCOVERED_JOBS_PATH, JSON.stringify(unique, null, 2));
+    onLog(`Saved ${unique.length} unique jobs to DB`);
+
+    return unique;
   }
 
   getSteps()  { return this.steps; }

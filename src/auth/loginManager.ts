@@ -51,6 +51,48 @@ export function getAuthStatus(): Record<string, { connected: boolean; noLoginNee
   };
 }
 
+// Auto-login with email + password (no manual interaction needed)
+// Selectors sourced from Naukri's 2026 login page: #usernameField / #passwordField
+export async function loginNaukriWithCredentials(
+  email: string,
+  password: string,
+  onLog: (msg: string) => void
+): Promise<void> {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext({
+    userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    viewport: { width: 1280, height: 800 },
+  });
+  const page = await context.newPage();
+
+  try {
+    onLog("Auto-logging in to Naukri with email/password…");
+    await page.goto("https://login.naukri.com/", { waitUntil: "load", timeout: 30000 });
+
+    await page.waitForSelector("#usernameField", { timeout: 15000 });
+    await page.fill("#usernameField", email);
+    await page.fill("#passwordField", password);
+    await page.press("#passwordField", "Enter");
+
+    // Wait for redirect away from login page
+    await page.waitForURL((url) => !url.href.includes("/nlogin/") && !url.href.includes("login.naukri.com"), {
+      timeout: 30000,
+    });
+
+    // Extra settle time for session cookies
+    await page.waitForTimeout(3000);
+
+    const cookies = await context.cookies();
+    fs.writeFileSync(cookiePath("naukri"), JSON.stringify(cookies, null, 2));
+    onLog("✓ Auto-login successful — session saved");
+  } finally {
+    await context.close();
+    await browser.close();
+  }
+}
+
 export async function loginWithBrowser(
   source: AuthSource,
   onLog: (msg: string) => void

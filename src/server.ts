@@ -17,7 +17,7 @@ import { NaukriScraper } from "./jobs/naukri.js";
 
 import { appendResult, loadApplied } from "./tracker/storage.js";
 import { listCareerPages, countCareerPages } from "./tracker/careerPages.js";
-import { NaukriRecorder, FLOW_PATH } from "./jobs/naukriRecorder.js";
+import { NaukriRecorder, FLOW_PATH, DISCOVERED_JOBS_PATH, type DiscoveredJob } from "./jobs/naukriRecorder.js";
 import { loadFlow } from "./jobs/naukriReplayer.js";
 import { connectDB } from "./db/connect.js";
 import { CrawlRun } from "./db/models/CrawlRun.js";
@@ -387,11 +387,17 @@ app.post("/api/naukri/learn/stop", async (_req, res) => {
 
 app.get("/api/naukri/learn/status", (_req, res) => {
   const flow = loadFlow();
+  let discoveredCount = 0;
+  try {
+    if (fs.existsSync(DISCOVERED_JOBS_PATH)) {
+      discoveredCount = (JSON.parse(fs.readFileSync(DISCOVERED_JOBS_PATH, "utf-8")) as unknown[]).length;
+    }
+  } catch { /* ignore */ }
   res.json({
-    // recorder exists means a session is active (even if browser was closed)
-    recording: recorder !== null,
-    steps:     recorder?.getSteps().length ?? 0,
-    liveLog:   learnSteps.slice(-50),
+    recording:      recorder !== null,
+    steps:          recorder?.getSteps().length ?? 0,
+    liveLog:        learnSteps.slice(-50),
+    discoveredCount,
     savedFlow: flow
       ? { recordedAt: flow.recordedAt, stepCount: flow.steps.length, notes: flow.notes }
       : null,
@@ -405,6 +411,117 @@ app.delete("/api/naukri/learn/flow", (_req, res) => {
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
+});
+
+// Search Naukri using the recorder's open browser, save found jobs to DB
+app.post("/api/naukri/learn/search", async (_req, res) => {
+  if (!recorder?.isRunning()) {
+    res.status(400).json({ error: "Learn Mode is not running. Start it first." });
+    return;
+  }
+  const current = recorder;
+  res.json({ ok: true, message: "Searching… watch the browser" });
+
+  const cfg      = loadJobsConfig();
+  const keywords = cfg.search.keywords.length ? cfg.search.keywords : ["node.js developer"];
+  const onLog    = (msg: string) => {
+    broadcast("log",        { msg, level: "info" });
+    broadcast("learn_step", { step: msg, total: current.getSteps().length });
+  };
+
+  try {
+    const jobs = await current.searchAndCapture(keywords, 2, onLog);
+
+    // Save each discovered job to DB as "skipped" (found, not yet applied)
+    let saved = 0;
+    for (const j of jobs) {
+      const jobObj = {
+        id:       require("crypto").createHash("md5").update(j.jobId || j.url).digest("hex"),
+        naukriJobId: j.jobId || undefined,
+        title:    j.title,
+        company:  j.company,
+        location: j.location,
+        url:      j.url,
+        source:   "naukri" as const,
+        easyApply: true,
+        foundAt:  new Date().toISOString(),
+      };
+      await appendResult({ job: jobObj, status: "skipped" }).catch(() => {});
+      saved++;
+    }
+
+    broadcast("log", { msg: `Search complete: ${saved} jobs saved to DB`, level: "info" });
+    broadcast("learn_search_done", { count: saved });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    broadcast("log", { msg: `Search error: ${msg}`, level: "error" });
+  }
+});
+
+// Apply the recorded flow to all discovered jobs
+app.post("/api/naukri/learn/apply-discovered", async (_req, res) => {
+  const { hasRecordedFlow } = await import("./jobs/naukriReplayer.js");
+  if (!hasRecordedFlow()) {
+    res.status(400).json({ error: "No recorded flow. Use Learn Mode to record one first." });
+    return;
+  }
+  if (!fs.existsSync(DISCOVERED_JOBS_PATH)) {
+    res.status(400).json({ error: "No discovered jobs. Run 'Search Jobs' in Learn Mode first." });
+    return;
+  }
+  if (crawlRunning) {
+    res.status(409).json({ error: "A crawl is already running." });
+    return;
+  }
+
+  const discovered: DiscoveredJob[] = JSON.parse(fs.readFileSync(DISCOVERED_JOBS_PATH, "utf-8"));
+  res.json({ ok: true, count: discovered.length, message: "Applying via recorded flow…" });
+
+  // Run as a background crawl using the Naukri scraper + replay
+  crawlRunning = true;
+  broadcast("status", { running: true, source: "naukri" });
+
+  (async () => {
+    const cfg = loadJobsConfig();
+    cfg.autoApply  = true;
+    cfg.showBrowser = true;
+    const scraper = new NaukriScraper(cfg);
+    scraper.setLogCallback((msg) => broadcast("log", { msg, level: "info" }));
+
+    try {
+      await scraper.init();
+      let applied = 0;
+      for (const j of discovered) {
+        if (applied >= cfg.maxApplicationsPerRun) break;
+        const job = {
+          id: require("crypto").createHash("md5").update(j.jobId || j.url).digest("hex"),
+          naukriJobId: j.jobId || undefined,
+          title: j.title, company: j.company,
+          location: j.location, url: j.url,
+          source: "naukri" as const, easyApply: true,
+          foundAt: new Date().toISOString(),
+        };
+        broadcast("log", { msg: `Applying: ${job.title} @ ${job.company}`, level: "info" });
+        const result = await scraper.applyToJob(job);
+        await appendResult(result).catch(() => {});
+        if (result.status === "applied") {
+          applied++;
+          broadcast("log", { msg: `✓ Applied [${applied}]: ${job.title}`, level: "info" });
+        } else {
+          broadcast("log", { msg: `${result.status}: ${job.title} — ${result.error ?? ""}`, level: "info" });
+        }
+        broadcast("progress", { job: job.title, company: job.company, status: result.status });
+      }
+      broadcast("done", { applied, total: discovered.length });
+      broadcast("log", { msg: `Done — Applied: ${applied}/${discovered.length}`, level: "info" });
+    } catch (err) {
+      broadcast("error", { msg: err instanceof Error ? err.message : String(err) });
+    } finally {
+      await scraper.close().catch(() => {});
+      crawlRunning = false;
+      broadcast("status", { running: false });
+    }
+  })();
 });
 
 app.get("/api/logs", async (req, res) => {

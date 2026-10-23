@@ -237,7 +237,6 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
 .log-row:hover{background:var(--surface2)}
 .log-row.level-error{border-color:var(--red);background:var(--red-bg)}
 .log-row.level-warn{border-color:var(--amber);background:var(--amber-bg)}
-.log-row.level-info{}
 .log-row.level-debug{opacity:.6}
 .log-ts{color:var(--fg-muted);font-size:11px;white-space:nowrap}
 .log-level{font-weight:700;text-transform:uppercase;font-size:10px;padding:1px 6px;border-radius:4px;text-align:center}
@@ -412,12 +411,12 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
         <span class="chip" data-site="lever.co">⚙️ Lever</span>
       </div>
       <div class="toggle-row">
-        <label class="toggle"><input type="checkbox" id="autoApplyToggle"><span class="slider"></span></label>
+        <label class="toggle"><input type="checkbox" id="autoApplyToggle" checked><span class="slider"></span></label>
         <span class="toggle-label">Auto-apply to jobs</span>
-        <span class="toggle-warn" id="autoApplyWarn" hidden>⚠ Will submit real applications</span>
+        <span class="toggle-warn" id="autoApplyWarn">⚠ Will submit real applications</span>
       </div>
       <div class="toggle-row">
-        <label class="toggle"><input type="checkbox" id="showBrowserToggle"><span class="slider"></span></label>
+        <label class="toggle"><input type="checkbox" id="showBrowserToggle" checked><span class="slider"></span></label>
         <span class="toggle-label">Show browser</span>
         <span class="toggle-warn">👁 Watch the automation live</span>
       </div>
@@ -583,19 +582,30 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary btn-sm" id="learnStartBtn">▶ Start Recording</button>
+          <button class="btn btn-ghost btn-sm" id="learnSearchBtn" style="display:none">🔍 Search Jobs</button>
           <button class="btn btn-ghost btn-sm" id="learnStopBtn" style="display:none">⏹ Stop & Save</button>
           <button class="btn btn-ghost btn-sm" id="learnDeleteBtn" style="display:none;color:var(--red)">🗑 Delete Flow</button>
+          <button class="btn btn-primary btn-sm" id="learnApplyBtn" style="display:none">▶ Apply to Found Jobs</button>
         </div>
       </div>
 
       <!-- Status bar -->
       <div id="learnStatus" style="font-size:13px;color:var(--fg-muted);margin-bottom:10px"></div>
 
+      <!-- Discovered jobs count -->
+      <div id="learnDiscoveredBar" hidden style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">📋</span>
+        <div>
+          <strong id="learnDiscoveredCount" style="font-size:13px">0 jobs found</strong>
+          <div style="font-size:11px;color:var(--fg-muted)">Scraped from Naukri search — ready to apply</div>
+        </div>
+      </div>
+
       <!-- Saved flow info -->
       <div id="learnFlowInfo" hidden style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           <span style="font-size:16px">✅</span>
-          <strong style="font-size:13px">Recorded flow active</strong>
+          <strong style="font-size:13px">Recorded apply flow active</strong>
           <span id="learnFlowDate" style="font-size:11px;color:var(--fg-muted)"></span>
         </div>
         <div style="font-size:12px;color:var(--fg-muted)" id="learnFlowSteps"></div>
@@ -605,9 +615,12 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
       <div id="learnLog" style="display:none;flex-direction:column;gap:3px;max-height:250px;overflow-y:auto;font-family:monospace;font-size:12px"></div>
 
       <div style="font-size:12px;color:var(--fg-muted);border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
-        <strong>How it works:</strong> Click Start → a real browser opens on Naukri →
-        find any job and apply manually → click Stop → your exact steps are saved.
-        All future auto-applies will follow your recorded flow exactly.
+        <strong>How it works:</strong>
+        1) Click <em>Start Recording</em> → browser opens on Naukri →
+        2) Click <em>Search Jobs</em> → bot scrapes all jobs into DB in that same tab →
+        3) Apply to <strong>one</strong> job manually so the bot learns your moves →
+        4) Click <em>Stop &amp; Save</em> to lock in your flow →
+        5) Click <em>Apply to Found Jobs</em> → bot replays your exact steps on every found job.
       </div>
     </div>
 
@@ -1273,23 +1286,39 @@ async function loadLearnStatus() {
   try {
     const res  = await fetch(`${API}/api/naukri/learn/status`);
     const data = await res.json();
-    const startBtn  = document.getElementById('learnStartBtn');
-    const stopBtn   = document.getElementById('learnStopBtn');
-    const deleteBtn = document.getElementById('learnDeleteBtn');
-    const status    = document.getElementById('learnStatus');
-    const flowInfo  = document.getElementById('learnFlowInfo');
-    const flowDate  = document.getElementById('learnFlowDate');
-    const flowSteps = document.getElementById('learnFlowSteps');
+    const startBtn    = document.getElementById('learnStartBtn');
+    const stopBtn     = document.getElementById('learnStopBtn');
+    const deleteBtn   = document.getElementById('learnDeleteBtn');
+    const searchBtn   = document.getElementById('learnSearchBtn');
+    const applyBtn    = document.getElementById('learnApplyBtn');
+    const status      = document.getElementById('learnStatus');
+    const flowInfo    = document.getElementById('learnFlowInfo');
+    const flowDate    = document.getElementById('learnFlowDate');
+    const flowSteps   = document.getElementById('learnFlowSteps');
+    const discBar     = document.getElementById('learnDiscoveredBar');
+    const discCount   = document.getElementById('learnDiscoveredCount');
 
     if (data.recording) {
-      startBtn.style.display = 'none';
-      stopBtn.style.display  = '';
+      startBtn.style.display  = 'none';
+      stopBtn.style.display   = '';
       deleteBtn.style.display = 'none';
+      searchBtn.style.display = '';
       status.innerHTML = '<span style="color:var(--red)">⏺ Recording… ' + data.steps + ' steps captured</span>';
       document.getElementById('learnLog').style.display = 'flex';
     } else {
-      startBtn.style.display = '';
-      stopBtn.style.display  = 'none';
+      startBtn.style.display  = '';
+      stopBtn.style.display   = 'none';
+      searchBtn.style.display = 'none';
+    }
+
+    // Show discovered jobs bar + apply button when jobs are saved
+    if (data.discoveredCount > 0) {
+      discBar.hidden = false;
+      discCount.textContent = data.discoveredCount + ' jobs found';
+      if (data.savedFlow) applyBtn.style.display = '';
+    } else {
+      discBar.hidden = true;
+      applyBtn.style.display = 'none';
     }
 
     if (data.savedFlow) {
@@ -1324,8 +1353,9 @@ document.getElementById('learnStartBtn').addEventListener('click', async () => {
     if (!res.ok) { alert(data.error); btn.disabled = false; btn.textContent = '▶ Start Recording'; return; }
     document.getElementById('learnStatus').innerHTML = '<span style="color:var(--accent)">' + esc(data.message) + '</span>';
     document.getElementById('learnLog').style.display = 'flex';
-    document.getElementById('learnStartBtn').style.display = 'none';
-    document.getElementById('learnStopBtn').style.display  = '';
+    document.getElementById('learnStartBtn').style.display  = 'none';
+    document.getElementById('learnStopBtn').style.display   = '';
+    document.getElementById('learnSearchBtn').style.display = '';
     // Poll for live steps
     window._learnPoll = setInterval(loadLearnStatus, 2000);
   } catch (e) { alert('Could not reach server'); btn.disabled = false; btn.textContent = '▶ Start Recording'; }
@@ -1364,6 +1394,37 @@ document.getElementById('learnDeleteBtn').addEventListener('click', async () => 
   if (!confirm('Delete the recorded flow? Auto-apply will fall back to built-in selectors.')) return;
   await fetch(`${API}/api/naukri/learn/flow`, { method: 'DELETE' });
   loadLearnStatus();
+});
+
+document.getElementById('learnSearchBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('learnSearchBtn');
+  btn.disabled = true; btn.textContent = 'Searching…';
+  try {
+    const res  = await fetch(`${API}/api/naukri/learn/search`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Search failed'); }
+    else {
+      document.getElementById('learnStatus').innerHTML =
+        `<span style="color:var(--accent)">✅ ${data.message}</span>`;
+      setTimeout(loadLearnStatus, 500);
+    }
+  } catch (e) { alert('Could not reach server: ' + e); }
+  finally { btn.disabled = false; btn.textContent = '🔍 Search Jobs'; }
+});
+
+document.getElementById('learnApplyBtn').addEventListener('click', async () => {
+  if (!confirm('Start applying the recorded flow to all found jobs? This will open Naukri and submit applications.')) return;
+  const btn = document.getElementById('learnApplyBtn');
+  btn.disabled = true; btn.textContent = 'Applying…';
+  try {
+    const res  = await fetch(`${API}/api/naukri/learn/apply-discovered`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Apply failed'); btn.disabled = false; btn.textContent = '▶ Apply to Found Jobs'; }
+    else {
+      document.getElementById('learnStatus').innerHTML =
+        `<span style="color:var(--accent)">🚀 ${data.message}</span>`;
+    }
+  } catch (e) { alert('Could not reach server: ' + e); btn.disabled = false; btn.textContent = '▶ Apply to Found Jobs'; }
 });
 
 // Live step feed from SSE

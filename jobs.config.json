@@ -33,7 +33,7 @@
     "wellfound": true,
     "weworkremotely": true
   },
-  "autoApply": false,
-  "showBrowser": false,
+  "autoApply": true,
+  "showBrowser": true,
   "maxApplicationsPerRun": 20
 }
