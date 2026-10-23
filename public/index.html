@@ -1,69 +1,138 @@
 <title>Job Hunt Dashboard</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 <style>
+/* ── layout: max-1280 centered, 5-tab top nav ── */
 :root {
-  --bg:        #f0f2f8;
-  --surface:   #ffffff;
-  --surface2:  #f7f8fc;
-  --border:    #e2e5f0;
-  --fg:        #141825;
-  --fg-muted:  #6b7491;
-  --accent:    #5b5ef4;
-  --accent-bg: #eeeeff;
-  --green:     #16a34a;
-  --green-bg:  #dcfce7;
-  --amber:     #d97706;
-  --amber-bg:  #fef3c7;
-  --red:       #dc2626;
-  --red-bg:    #fee2e2;
-  --blue:      #2563eb;
-  --blue-bg:   #dbeafe;
+  --bg:       #f2f3fa;
+  --surface:  #ffffff;
+  --surface2: #f7f8fc;
+  --border:   #e1e4f0;
+  --fg:       #13162a;
+  --fg-muted: #6570a0;
+  --accent:   #6d28d9;
+  --accent2:  #0d9488;
+  --a-grad:   linear-gradient(135deg,#6d28d9,#0d9488);
+  --green:    #16a34a; --green-bg: #dcfce7;
+  --amber:    #d97706; --amber-bg: #fef3c7;
+  --red:      #dc2626; --red-bg:   #fee2e2;
+  --blue:     #2563eb; --blue-bg:  #dbeafe;
+  --accent-bg:#ede9fe;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:#0d0f18;--surface:#151824;--surface2:#1c2030;--border:#252a3d;
-    --fg:#e4e8f5;--fg-muted:#7a82a0;--accent:#7577f8;--accent-bg:#1e2050;
-    --green:#4ade80;--green-bg:#052e16;--amber:#fbbf24;--amber-bg:#1c1200;
-    --red:#f87171;--red-bg:#1f0505;--blue:#60a5fa;--blue-bg:#0c1a3a;
-    color-scheme: dark;
+    --bg:#08090f;--surface:#0f111a;--surface2:#161922;--border:#1e2235;
+    --fg:#e4e8f5;--fg-muted:#5e6680;
+    --accent:#9d6ef8;--accent2:#2dd4bf;
+    --a-grad:linear-gradient(135deg,#9d6ef8,#2dd4bf);
+    --green:#4ade80;--green-bg:#052e16;
+    --amber:#fbbf24;--amber-bg:#1c1200;
+    --red:#f87171;--red-bg:#1f0505;
+    --blue:#60a5fa;--blue-bg:#0c1a3a;
+    --accent-bg:#2d1b6e;
+    color-scheme:dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg:#0d0f18;--surface:#151824;--surface2:#1c2030;--border:#252a3d;
-  --fg:#e4e8f5;--fg-muted:#7a82a0;--accent:#7577f8;--accent-bg:#1e2050;
-  --green:#4ade80;--green-bg:#052e16;--amber:#fbbf24;--amber-bg:#1c1200;
-  --red:#f87171;--red-bg:#1f0505;--blue:#60a5fa;--blue-bg:#0c1a3a;
-  color-scheme: dark;
+  --bg:#08090f;--surface:#0f111a;--surface2:#161922;--border:#1e2235;
+  --fg:#e4e8f5;--fg-muted:#5e6680;
+  --accent:#9d6ef8;--accent2:#2dd4bf;
+  --a-grad:linear-gradient(135deg,#9d6ef8,#2dd4bf);
+  --green:#4ade80;--green-bg:#052e16;
+  --amber:#fbbf24;--amber-bg:#1c1200;
+  --red:#f87171;--red-bg:#1f0505;
+  --blue:#60a5fa;--blue-bg:#0c1a3a;
+  --accent-bg:#2d1b6e;
+  color-scheme:dark;
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0}
-body {
-  font-family:'Inter',system-ui,sans-serif;
-  background:var(--bg);color:var(--fg);font-size:14px;line-height:1.5;
+body{
+  font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;
+  background:var(--bg);color:var(--fg);
   padding-left:max(16px,env(safe-area-inset-left,0px));
   padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-block:0;
 }
-.wrap{max-width:1200px;margin:0 auto;padding-block:28px}
+.wrap{max-width:1280px;margin:0 auto;padding-block:24px}
 
-/* header */
-.header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:24px}
-.header h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
-.header p{color:var(--fg-muted);font-size:13px;margin-top:2px}
-.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* ── header ── */
+.header{display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--a-grad);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;color:#fff;font-family:'Space Grotesk',sans-serif;
+  flex-shrink:0;
+}
+.logo-text{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--fg-muted);margin-top:-2px}
+.header-spacer{flex:1}
+.header-actions{display:flex;gap:8px;align-items:center}
 
-/* crawl panel */
-.crawl-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:22px}
+/* ── tab nav ── */
+.tab-nav{
+  display:flex;gap:2px;padding:4px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  width:fit-content;max-width:100%;margin-bottom:24px;overflow-x:auto;
+}
+.tab-btn{
+  padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;
+  cursor:pointer;border:none;background:transparent;color:var(--fg-muted);
+  font-family:inherit;transition:all .18s;white-space:nowrap;display:flex;align-items:center;gap:6px;
+}
+.tab-btn:hover{color:var(--fg)}
+.tab-btn.active{background:var(--a-grad);color:#fff;font-weight:600}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* ── buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+  border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;
+  font-family:inherit;transition:opacity .15s;
+}
+.btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--a-grad);color:#fff}
+.btn-ghost{background:var(--surface);color:var(--fg);border:1px solid var(--border)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.theme-btn{width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px}
+
+/* ── cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px}
+.card-title{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-muted);margin-bottom:14px}
+
+/* ── hero stat tiles ── */
+.tiles-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px}
+.tile{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px;position:relative;overflow:hidden;
+}
+.tile::before{
+  content:"";position:absolute;inset:0;opacity:0;transition:opacity .2s;
+  background:var(--a-grad);
+}
+.tile-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-muted);margin-bottom:8px}
+.tile-value{
+  font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;
+  font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1;
+}
+.tile-sub{font-size:11px;color:var(--fg-muted);margin-top:6px}
+.tile.applied .tile-value{color:var(--green)}
+.tile.skipped .tile-value{color:var(--amber)}
+.tile.failed  .tile-value{color:var(--red)}
+.tile.accent  .tile-value{background:var(--a-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* ── crawl panel ── */
+.crawl-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
 .crawl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .site-input{
   flex:1;min-width:220px;padding:9px 13px;border-radius:8px;
   border:1px solid var(--border);background:var(--surface2);
-  color:var(--fg);font-size:13px;font-family:inherit;outline:none;
-  transition:border-color .15s;
+  color:var(--fg);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s;
 }
 .site-input:focus{border-color:var(--accent)}
 .site-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
@@ -73,7 +142,6 @@ body {
   color:var(--fg-muted);transition:all .15s;user-select:none;
 }
 .chip:hover,.chip.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
-
 .toggle-row{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 .toggle-label{font-size:13px;color:var(--fg-muted)}
 .toggle{position:relative;width:36px;height:20px;cursor:pointer}
@@ -82,48 +150,33 @@ body {
 .slider::before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
 .toggle input:checked + .slider{background:var(--accent)}
 .toggle input:checked + .slider::before{transform:translateX(16px)}
-.toggle-warn{font-size:12px;color:var(--amber);margin-left:4px}
+.toggle-warn{font-size:12px;color:var(--amber)}
 
-/* live log */
-.log-box{
-  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-  margin-top:14px;overflow:hidden;max-height:0;transition:max-height .3s ease;
-}
-.log-box.open{max-height:220px}
-.log-inner{overflow-y:auto;max-height:220px;padding:12px 14px}
-.log-line{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg-muted);line-height:1.6}
-.log-line.ok{color:var(--green)}
-.log-line.err{color:var(--red)}
+/* ── log box ── */
+.log-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-top:14px;overflow:hidden;max-height:0;transition:max-height .3s ease}
+.log-box.open{max-height:200px}
+.log-inner{overflow-y:auto;max-height:200px;padding:10px 14px}
+.log-line{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--fg-muted);line-height:1.7}
+.log-line.ok{color:var(--green)}.log-line.err{color:var(--red)}
 
-/* buttons */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:opacity .15s;font-family:inherit}
-.btn:hover{opacity:.85}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-ghost{background:var(--surface);color:var(--fg);border:1px solid var(--border)}
-.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bg)}
+/* ── badges ── */
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.badge-applied{background:var(--green-bg);color:var(--green)}
+.badge-skipped{background:var(--amber-bg);color:var(--amber)}
+.badge-failed{background:var(--red-bg);color:var(--red)}
+.badge-already{background:var(--blue-bg);color:var(--blue)}
+.badge-source{background:var(--accent-bg);color:var(--accent)}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg-muted)}
 
-/* stat tiles */
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
-.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-.tile-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);margin-bottom:6px}
-.tile-value{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1}
-.tile-sub{font-size:12px;color:var(--fg-muted);margin-top:5px}
-.tile.applied .tile-value{color:var(--green)}
-.tile.skipped .tile-value{color:var(--amber)}
-.tile.failed  .tile-value{color:var(--red)}
+/* ── charts ── */
+.charts{display:grid;grid-template-columns:1fr 1.8fr;gap:12px;margin-bottom:20px}
+@media(max-width:700px){.charts{grid-template-columns:1fr}}
+.chart-wrap.donut{max-width:220px;margin:0 auto}
 
-/* charts */
-.charts{display:grid;grid-template-columns:1fr 1.6fr;gap:12px;margin-bottom:20px}
-@media(max-width:680px){.charts{grid-template-columns:1fr}}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
-.card h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);margin-bottom:14px}
-.chart-wrap.donut{max-width:230px;margin:0 auto}
-
-/* table */
-.table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+/* ── table ── */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .table-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)}
-.table-header h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted)}
+.table-header h2{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-muted)}
 .filter-row{display:flex;gap:6px;flex-wrap:wrap}
 .filter-btn{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--fg-muted);font-family:inherit;transition:all .15s}
 .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -134,36 +187,92 @@ tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--surface2)}
 tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
-.job-title{font-weight:500}
-.job-title a{color:inherit;text-decoration:none}
+.job-title{font-weight:500}.job-title a{color:inherit;text-decoration:none}
 .job-title a:hover{color:var(--accent);text-decoration:underline}
 .job-company{color:var(--fg-muted);font-size:12px;margin-top:1px}
-.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-.badge-applied{background:var(--green-bg);color:var(--green)}
-.badge-skipped{background:var(--amber-bg);color:var(--amber)}
-.badge-failed{background:var(--red-bg);color:var(--red)}
-.badge-already{background:var(--blue-bg);color:var(--blue)}
-.badge-source{background:var(--accent-bg);color:var(--accent)}
-.mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg-muted)}
-.empty{text-align:center;padding:36px;color:var(--fg-muted)}
-.empty strong{display:block;margin-bottom:4px;font-size:14px}
-/* tabs */
-.tab-nav{display:flex;gap:4px;padding:4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:fit-content;margin-bottom:24px}
-.tab-btn{padding:6px 18px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--fg-muted);font-family:inherit;transition:all .15s}
-.tab-btn.active{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.tab-content{display:none}
-.tab-content.active{display:block}
+.empty{text-align:center;padding:40px;color:var(--fg-muted)}
+.empty strong{display:block;margin-bottom:5px;font-size:15px;color:var(--fg)}
 
-/* profile */
+/* ── activity heatmap ── */
+.heatmap-wrap{overflow-x:auto;padding-bottom:4px}
+.heatmap-grid{display:flex;gap:3px}
+.heatmap-col{display:flex;flex-direction:column;gap:3px}
+.heatmap-cell{width:12px;height:12px;border-radius:2px;background:var(--border);flex-shrink:0}
+.heatmap-cell[data-l="1"]{background:#bbf7d0}.heatmap-cell[data-l="2"]{background:#4ade80}
+.heatmap-cell[data-l="3"]{background:#16a34a}.heatmap-cell[data-l="4"]{background:#15803d}
+:root[data-theme="dark"] .heatmap-cell[data-l="1"]{background:#052e16}
+:root[data-theme="dark"] .heatmap-cell[data-l="2"]{background:#166534}
+:root[data-theme="dark"] .heatmap-cell[data-l="3"]{background:#4ade80}
+:root[data-theme="dark"] .heatmap-cell[data-l="4"]{background:#86efac}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .heatmap-cell[data-l="1"]{background:#052e16}
+  :root:not([data-theme="light"]) .heatmap-cell[data-l="2"]{background:#166534}
+  :root:not([data-theme="light"]) .heatmap-cell[data-l="3"]{background:#4ade80}
+  :root:not([data-theme="light"]) .heatmap-cell[data-l="4"]{background:#86efac}
+}
+.heatmap-labels{display:flex;gap:3px;margin-bottom:4px}
+.heatmap-month{font-size:10px;color:var(--fg-muted);text-align:left}
+.heatmap-legend{display:flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;color:var(--fg-muted)}
+.heatmap-legend .heatmap-cell{width:10px;height:10px}
+
+/* ── funnel chart ── */
+.funnel-bars{display:flex;flex-direction:column;gap:10px}
+.funnel-row{display:flex;align-items:center;gap:12px}
+.funnel-label{font-size:12px;color:var(--fg-muted);width:70px;flex-shrink:0;text-align:right}
+.funnel-bar-wrap{flex:1;background:var(--surface2);border-radius:4px;height:22px;overflow:hidden;position:relative}
+.funnel-bar{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;padding-left:8px}
+.funnel-bar span{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:#fff;white-space:nowrap}
+.funnel-count{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;min-width:40px;text-align:right}
+
+/* ── naukri performance ── */
+.naukri-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.naukri-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.naukri-stat-icon{font-size:22px;margin-bottom:8px}
+.naukri-stat-value{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.naukri-stat-label{font-size:12px;color:var(--fg-muted);margin-top:3px}
+.naukri-score-bar{height:6px;border-radius:3px;background:var(--border);margin-top:8px;overflow:hidden}
+.naukri-score-fill{height:100%;border-radius:3px;background:var(--a-grad);transition:width 1s ease}
+.career-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px}
+.career-company{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.career-links{display:flex;gap:6px;flex-shrink:0}
+.career-pill{font-size:11px;padding:3px 8px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--fg-muted);text-decoration:none;white-space:nowrap}
+.career-pill:hover{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.connect-cta{text-align:center;padding:48px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.connect-cta h3{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px}
+.connect-cta p{color:var(--fg-muted);font-size:13px;margin-bottom:20px}
+
+/* ── run history ── */
+.runs-list{display:flex;flex-direction:column;gap:10px}
+.run-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.run-header{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;transition:background .1s}
+.run-header:hover{background:var(--surface2)}
+.run-source-badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;background:var(--accent-bg);color:var(--accent);flex-shrink:0}
+.run-meta{flex:1;min-width:0}
+.run-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run-sub{font-size:11px;color:var(--fg-muted);margin-top:1px}
+.run-stats{display:flex;gap:10px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+.run-stat{font-size:12px;font-weight:600}
+.run-stat.ok{color:var(--green)}.run-stat.warn{color:var(--amber)}.run-stat.err{color:var(--red)}
+.run-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-done{background:var(--green)}.dot-running{background:var(--amber)}.dot-error{background:var(--red)}
+.run-body{border-top:1px solid var(--border);background:var(--surface2)}
+.run-tabs{display:flex;border-bottom:1px solid var(--border)}
+.run-tab{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;background:transparent;border:none;color:var(--fg-muted);font-family:inherit;border-bottom:2px solid transparent;transition:all .15s}
+.run-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.run-failures{padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.failure-row{font-size:12px;padding:8px 10px;border-radius:6px;background:var(--red-bg);color:var(--red);border-left:3px solid var(--red)}
+.failure-row strong{display:block;font-weight:600;margin-bottom:1px}
+.failure-row span{color:var(--fg-muted);font-size:11px}
+
+/* ── profile ── */
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:600px){.profile-grid{grid-template-columns:1fr}}
 .field{display:flex;flex-direction:column;gap:5px}
 .field.full{grid-column:1/-1}
-.field label{font-size:12px;font-weight:600;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.05em}
+.field label{font-size:11px;font-weight:600;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.05em}
 .field input,.field textarea,.field select{padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s;width:100%}
-.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
 .field textarea{resize:vertical;min-height:80px;line-height:1.5}
-.skills-input-wrap{position:relative}
 .skills-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .skill-tag{display:inline-flex;align-items:center;gap:4px;background:var(--accent-bg);color:var(--accent);border-radius:20px;padding:2px 8px 2px 10px;font-size:12px;font-weight:500}
 .skill-tag button{background:none;border:none;cursor:pointer;color:var(--accent);font-size:14px;line-height:1;padding:0;opacity:.7}
@@ -171,25 +280,12 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
 .resume-zone{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
 .resume-zone:hover,.resume-zone.drag{border-color:var(--accent);background:var(--accent-bg)}
 .resume-zone input{display:none}
-.resume-zone .rz-icon{font-size:28px;margin-bottom:8px}
-.resume-zone h3{font-size:14px;font-weight:600}
-.resume-zone p{font-size:12px;color:var(--fg-muted);margin-top:3px}
 .resume-status{display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--green-bg);font-size:13px;color:var(--green);font-weight:500}
 .profile-save-row{display:flex;align-items:center;gap:12px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
 .save-msg{font-size:13px;color:var(--green)}
+.section-divider{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-muted);grid-column:1/-1;border-top:1px solid var(--border);padding-top:14px;margin-top:4px}
 
-.theme-btn{width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px}
-.theme-btn:hover{background:var(--surface2)}
-.divider{display:flex;align-items:center;gap:10px;color:var(--fg-muted);font-size:12px;margin:16px 0}
-.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
-.upload-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-@media(max-width:760px){.profile-layout{grid-template-columns:1fr !important}}
-
-/* accounts */
-.accounts-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
-.accounts-header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-.accounts-title{font-size:14px;font-weight:600}
-.accounts-sub{font-size:12px;color:var(--fg-muted)}
+/* ── accounts ── */
 .accounts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
 .account-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px}
 .account-card.skeleton{animation:pulse 1.4s ease-in-out infinite}
@@ -198,73 +294,336 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
 .account-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .account-name{font-size:13px;font-weight:500}
 .account-status{font-size:11px;margin-top:1px}
-.status-connected{color:var(--green)}
-.status-none{color:var(--fg-muted)}
-.status-api{color:var(--accent)}
+.status-connected{color:var(--green)}.status-none{color:var(--fg-muted)}.status-api{color:var(--accent)}
 .btn-connect{padding:5px 11px;font-size:11px;font-weight:600;border-radius:6px;background:var(--accent-bg);color:var(--accent);border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
 .btn-connect:hover{background:var(--accent);color:#fff}
 .btn-disconnect{padding:5px 11px;font-size:11px;font-weight:600;border-radius:6px;background:var(--red-bg);color:var(--red);border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap}
 .btn-connecting{padding:5px 11px;font-size:11px;font-weight:600;border-radius:6px;background:var(--amber-bg);color:var(--amber);border:1px solid transparent;font-family:inherit;white-space:nowrap}
+
+/* ── upload row ── */
+.divider{display:flex;align-items:center;gap:10px;color:var(--fg-muted);font-size:12px;margin:16px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.upload-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* ── misc ── */
+@media(max-width:760px){.profile-layout{grid-template-columns:1fr !important}}
+.success-rate{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--green-bg);color:var(--green)}
 </style>
 
-<!-- Login screen -->
+<!-- ── Login screen ── -->
 <div id="loginScreen" hidden style="min-height:100vh;display:flex;align-items:center;justify-content:center">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:360px;text-align:center">
-    <div style="font-size:36px;margin-bottom:16px">🔒</div>
-    <h1 style="font-size:20px;font-weight:700;margin-bottom:6px">Job Hunt Dashboard</h1>
-    <p style="color:var(--fg-muted);font-size:13px;margin-bottom:24px">Enter your password to continue</p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:44px 40px;width:100%;max-width:380px;text-align:center">
+    <div style="width:52px;height:52px;border-radius:14px;background:var(--a-grad);margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;font-family:'Space Grotesk',sans-serif">J</div>
+    <h1 style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px">Job Hunt Dashboard</h1>
+    <p style="color:var(--fg-muted);font-size:13px;margin-bottom:26px">Enter your password to continue</p>
     <input type="password" id="appPassword" placeholder="Password"
-      style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);font-size:14px;font-family:inherit;outline:none;margin-bottom:12px">
-    <button class="btn btn-primary" id="appLoginBtn" style="width:100%;justify-content:center">Unlock</button>
+      style="width:100%;padding:11px 14px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);font-size:14px;font-family:inherit;outline:none;margin-bottom:12px">
+    <button class="btn btn-primary" id="appLoginBtn" style="width:100%;justify-content:center;padding:11px">Unlock Dashboard</button>
     <p id="loginErr" style="color:var(--red);font-size:13px;margin-top:10px" hidden>Wrong password</p>
   </div>
 </div>
 
+<!-- ── Main App ── -->
 <div id="appContent" hidden>
 <div class="wrap">
+
+  <!-- Header -->
   <div class="header">
-    <div>
-      <h1>Job Hunt Dashboard</h1>
-      <p>Crawl job boards and track your applications</p>
+    <div class="logo">
+      <div class="logo-mark">J</div>
+      <div>
+        <div class="logo-text">Job Hunt</div>
+        <div class="logo-sub">Kamal Bisht · SDE 5yr+</div>
+      </div>
     </div>
+    <div class="header-spacer"></div>
     <div class="header-actions">
+      <span id="crawlStatusBadge" hidden style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--amber-bg);color:var(--amber)">⏳ Crawling…</span>
       <button class="theme-btn" id="themeToggle" title="Toggle theme">🌙</button>
-      <button class="btn" id="logoutBtn" title="Lock dashboard" style="display:none;font-size:12px;padding:6px 12px">🔒 Lock</button>
+      <button class="btn btn-sm btn-ghost" id="logoutBtn" style="display:none">🔒 Lock</button>
     </div>
   </div>
 
-  <!-- Tab nav -->
+  <!-- Tabs -->
   <div class="tab-nav">
-    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+    <button class="tab-btn" data-tab="analytics">📈 Analytics</button>
+    <button class="tab-btn" data-tab="naukri">🇮🇳 Naukri</button>
+    <button class="tab-btn" data-tab="history">📋 History</button>
     <button class="tab-btn" data-tab="profile">👤 Profile</button>
   </div>
 
-  <!-- Profile tab -->
+  <!-- ═══ OVERVIEW TAB ═══ -->
+  <div class="tab-content active" id="tab-overview">
+
+    <!-- Stat tiles -->
+    <div class="tiles-row">
+      <div class="tile accent"><div class="tile-label">Total Found</div><div class="tile-value" id="statTotal">—</div><div class="tile-sub">all runs</div></div>
+      <div class="tile applied"><div class="tile-label">Applied</div><div class="tile-value" id="statApplied">—</div><div class="tile-sub">submitted</div></div>
+      <div class="tile skipped"><div class="tile-label">Skipped</div><div class="tile-value" id="statSkipped">—</div><div class="tile-sub">no easy-apply</div></div>
+      <div class="tile failed"><div class="tile-label">Failed</div><div class="tile-value" id="statFailed">—</div><div class="tile-sub">errors</div></div>
+      <div class="tile"><div class="tile-label">Success Rate</div><div class="tile-value" id="statRate" style="font-size:28px">—</div><div class="tile-sub">applied / found</div></div>
+    </div>
+
+    <!-- Connected Accounts -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin:0">Connected Accounts</div>
+        <span style="font-size:12px;color:var(--fg-muted)">Log in once — sessions saved automatically</span>
+      </div>
+      <div class="accounts-grid" id="accountsGrid">
+        <div class="account-card skeleton"></div>
+        <div class="account-card skeleton"></div>
+        <div class="account-card skeleton"></div>
+        <div class="account-card skeleton"></div>
+      </div>
+    </div>
+
+    <!-- Crawl panel -->
+    <div class="crawl-panel">
+      <div class="crawl-row">
+        <input class="site-input" id="siteInput" placeholder="Enter site — e.g. naukri.com or linkedin.com/jobs">
+        <button class="btn btn-primary" id="crawlBtn">▶ Start Crawl</button>
+        <button class="btn btn-ghost" id="stopBtn" style="display:none">■ Stop</button>
+      </div>
+      <div class="site-chips" id="siteChips">
+        <span class="chip" data-site="naukri.com">🇮🇳 Naukri</span>
+        <span class="chip" data-site="linkedin.com">💼 LinkedIn</span>
+        <span class="chip" data-site="indeed.com">🔍 Indeed</span>
+        <span class="chip" data-site="wellfound.com">🚀 Wellfound</span>
+        <span class="chip" data-site="weworkremotely.com">🌍 WWR</span>
+        <span class="chip" data-site="greenhouse.io">🌿 Greenhouse</span>
+        <span class="chip" data-site="lever.co">⚙️ Lever</span>
+      </div>
+      <div class="toggle-row">
+        <label class="toggle"><input type="checkbox" id="autoApplyToggle"><span class="slider"></span></label>
+        <span class="toggle-label">Auto-apply to jobs</span>
+        <span class="toggle-warn" id="autoApplyWarn" hidden>⚠ Will submit real applications</span>
+      </div>
+      <div class="toggle-row">
+        <label class="toggle"><input type="checkbox" id="showBrowserToggle"><span class="slider"></span></label>
+        <span class="toggle-label">Show browser</span>
+        <span class="toggle-warn">👁 Watch the automation live</span>
+      </div>
+      <div class="log-box" id="logBox"><div class="log-inner" id="logInner"></div></div>
+      <div class="divider">or upload existing data</div>
+      <div class="upload-row">
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">↑ Import applied.json<input type="file" id="fileInput" accept=".json" style="display:none"></label>
+        <span class="mono" id="uploadMsg" style="font-size:12px"></span>
+      </div>
+    </div>
+
+    <!-- Jobs table -->
+    <div class="table-card">
+      <div class="table-header">
+        <h2>All Jobs</h2>
+        <div class="filter-row" id="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="applied">Applied</button>
+          <button class="filter-btn" data-filter="skipped">Skipped</button>
+          <button class="filter-btn" data-filter="failed">Failed</button>
+          <button class="filter-btn" data-filter="already_applied">Already Applied</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Job</th><th>Source</th><th>Location</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="jobsTable">
+            <tr><td colspan="5" class="empty"><strong>No data yet</strong>Pick a site and start crawling</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /overview -->
+
+  <!-- ═══ ANALYTICS TAB ═══ -->
+  <div class="tab-content" id="tab-analytics">
+
+    <!-- Source performance table -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin:0">Source Performance</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadAnalytics()">↻ Refresh</button>
+      </div>
+      <div id="sourcePerformanceTable">
+        <div class="empty" style="padding:24px"><strong>No crawl runs yet</strong>Start a crawl to see source analytics</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;margin-bottom:20px">
+      <!-- Funnel -->
+      <div class="card">
+        <div class="card-title">Application Funnel</div>
+        <div class="funnel-bars" id="funnelBars">
+          <div class="empty" style="padding:24px"><strong>No data</strong>Run a crawl to populate</div>
+        </div>
+      </div>
+      <!-- Source bar -->
+      <div class="card">
+        <div class="card-title">By Source</div>
+        <div><canvas id="sourceChart" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+      <!-- Donut -->
+      <div class="card">
+        <div class="card-title">Status Breakdown</div>
+        <div class="chart-wrap donut"><canvas id="statusChart" height="220"></canvas></div>
+      </div>
+      <!-- Top companies -->
+      <div class="card">
+        <div class="card-title">Top Companies</div>
+        <div id="topCompanies" style="display:flex;flex-direction:column;gap:8px">
+          <div class="empty" style="padding:24px"><strong>No data</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity heatmap -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin:0">Activity — Last 91 Days</div>
+        <div class="heatmap-legend">
+          Less <div class="heatmap-cell" data-l="0"></div><div class="heatmap-cell" data-l="1"></div><div class="heatmap-cell" data-l="2"></div><div class="heatmap-cell" data-l="3"></div><div class="heatmap-cell" data-l="4"></div> More
+        </div>
+      </div>
+      <div class="heatmap-wrap">
+        <div style="display:flex;flex-direction:column;gap:0">
+          <div class="heatmap-labels" id="heatmapMonths"></div>
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /analytics -->
+
+  <!-- ═══ NAUKRI TAB ═══ -->
+  <div class="tab-content" id="tab-naukri">
+    <div id="naukriContent">
+      <div class="connect-cta" id="naukriConnectCta">
+        <div style="font-size:40px;margin-bottom:12px">🇮🇳</div>
+        <h3>Naukri Performance Insights</h3>
+        <p>Connect your Naukri account to see profile views, search appearances, and job recommendations.</p>
+        <button class="btn btn-primary" onclick="connectNaukri()">Connect Naukri Account</button>
+      </div>
+
+      <div id="naukriStats" hidden>
+        <div class="naukri-grid">
+          <div class="naukri-stat">
+            <div class="naukri-stat-icon">👁️</div>
+            <div class="naukri-stat-value" id="nk-views">—</div>
+            <div class="naukri-stat-label">Profile Views (30d)</div>
+          </div>
+          <div class="naukri-stat">
+            <div class="naukri-stat-icon">🔍</div>
+            <div class="naukri-stat-value" id="nk-searches">—</div>
+            <div class="naukri-stat-label">Search Appearances</div>
+          </div>
+          <div class="naukri-stat">
+            <div class="naukri-stat-icon">📨</div>
+            <div class="naukri-stat-value" id="nk-inmails">—</div>
+            <div class="naukri-stat-label">Recruiter InMails</div>
+          </div>
+          <div class="naukri-stat">
+            <div class="naukri-stat-icon">✅</div>
+            <div class="naukri-stat-value" id="nk-applied">—</div>
+            <div class="naukri-stat-label">Applications (Naukri)</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+          <div class="card">
+            <div class="card-title">Profile Strength</div>
+            <div id="nk-score-value" style="font-family:'Space Grotesk',sans-serif;font-size:42px;font-weight:700;margin-bottom:8px">—</div>
+            <div class="naukri-score-bar"><div class="naukri-score-fill" id="nk-score-bar" style="width:0%"></div></div>
+            <div style="font-size:12px;color:var(--fg-muted);margin-top:6px" id="nk-score-label">Loading…</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Recommended Jobs</div>
+            <div id="nk-recommendations" style="font-family:'Space Grotesk',sans-serif;font-size:42px;font-weight:700;background:var(--a-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div>
+            <div style="font-size:12px;color:var(--fg-muted);margin-top:6px">Waiting for you on Naukri</div>
+            <a href="https://www.naukri.com/mnjuser/recommendedjobs" target="_blank" class="btn btn-ghost btn-sm" style="margin-top:12px;width:fit-content">Open in Naukri ↗</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Naukri Dashboard Links</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a href="https://www.naukri.com/mnjuser/performance" target="_blank" class="btn btn-ghost btn-sm">📊 Performance</a>
+            <a href="https://www.naukri.com/mnjuser/recommendedjobs" target="_blank" class="btn btn-ghost btn-sm">💼 Recommended Jobs</a>
+            <a href="https://www.naukri.com/mnjuser/homepage" target="_blank" class="btn btn-ghost btn-sm">🏠 My Naukri</a>
+            <a href="https://www.naukri.com/mnjuser/appliedjobs" target="_blank" class="btn btn-ghost btn-sm">✅ Applied Jobs</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Career Pages section — always visible -->
+    <div class="card" style="margin-top:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="card-title" style="margin:0">🏢 Discovered Career Pages</div>
+        <span id="careerPageCount" style="font-size:12px;color:var(--fg-muted)">0 companies</span>
+      </div>
+      <p style="font-size:13px;color:var(--fg-muted);margin:0 0 14px">
+        Company career pages collected while crawling. Use these to apply directly on company websites later.
+      </p>
+      <div id="careerPagesList" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto">
+        <div style="font-size:13px;color:var(--fg-muted);text-align:center;padding:20px">Run a Naukri crawl to start collecting career pages</div>
+      </div>
+    </div>
+  </div><!-- /naukri -->
+
+  <!-- ═══ HISTORY TAB ═══ -->
+  <div class="tab-content" id="tab-history">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700">Crawl History</div>
+        <div style="font-size:12px;color:var(--fg-muted);margin-top:2px">All past runs — pages crawled, jobs extracted, application results</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="refreshRunsBtn">↻ Refresh</button>
+    </div>
+    <div class="runs-list" id="runsList">
+      <div class="empty"><strong>No runs yet</strong>Start a crawl on the Overview tab</div>
+    </div>
+  </div><!-- /history -->
+
+  <!-- ═══ PROFILE TAB ═══ -->
   <div class="tab-content" id="tab-profile">
     <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start" class="profile-layout">
-
-      <!-- Left: personal info -->
+      <!-- Left: info -->
       <div class="card" style="padding:24px">
-        <h2 style="font-size:15px;font-weight:700;margin-bottom:20px;color:var(--fg)">Your Info</h2>
+        <h2 style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px">Your Profile</h2>
         <div class="profile-grid">
           <div class="field"><label>First Name</label><input type="text" id="pf-first" placeholder="Kamal"></div>
           <div class="field"><label>Last Name</label><input type="text" id="pf-last" placeholder="Bisht"></div>
-          <div class="field"><label>Email</label><input type="email" id="pf-email" placeholder="you@email.com"></div>
-          <div class="field"><label>Phone</label><input type="tel" id="pf-phone" placeholder="+91 98765 43210"></div>
-          <div class="field"><label>Current Role</label><input type="text" id="pf-role" placeholder="Software Engineer"></div>
-          <div class="field"><label>Years of Experience</label><input type="number" id="pf-exp" min="0" max="40" placeholder="2"></div>
-          <div class="field full"><label>LinkedIn URL</label><input type="url" id="pf-linkedin" placeholder="https://linkedin.com/in/yourname"></div>
-          <div class="field full"><label>GitHub URL</label><input type="url" id="pf-github" placeholder="https://github.com/yourname"></div>
-          <div class="field full"><label>Portfolio / Website</label><input type="url" id="pf-portfolio" placeholder="https://yoursite.com"></div>
+          <div class="field"><label>Email</label><input type="email" id="pf-email"></div>
+          <div class="field"><label>Phone</label><input type="tel" id="pf-phone"></div>
+          <div class="field"><label>Current Role</label><input type="text" id="pf-role"></div>
+          <div class="field"><label>Years of Experience</label><input type="number" id="pf-exp" min="0" max="40"></div>
+          <div class="field full"><label>LinkedIn URL</label><input type="url" id="pf-linkedin"></div>
+          <div class="field full"><label>GitHub URL</label><input type="url" id="pf-github"></div>
+          <div class="field full"><label>Portfolio / Website</label><input type="url" id="pf-portfolio"></div>
+          <div class="section-divider">Compensation & Availability</div>
+          <div class="field"><label>Current CTC</label><input type="text" id="pf-ctc-current" placeholder="e.g. 18 LPA"></div>
+          <div class="field"><label>Expected CTC</label><input type="text" id="pf-ctc-expected" placeholder="e.g. 24 LPA"></div>
+          <div class="field"><label>Notice Period</label>
+            <select id="pf-notice">
+              <option value="">Select…</option>
+              <option>Immediate</option><option>15 days</option><option>30 days</option>
+              <option>45 days</option><option>60 days</option><option>90 days</option>
+            </select>
+          </div>
+          <div class="field"><label>Willing to Relocate</label>
+            <select id="pf-relocate"><option value="Yes">Yes</option><option value="No">No</option></select>
+          </div>
+          <div class="field full"><label>Work Authorization</label><input type="text" id="pf-auth" placeholder="Indian Citizen"></div>
           <div class="field full">
             <label>Summary <span style="font-weight:400;text-transform:none;letter-spacing:0">(used in cover letter fields)</span></label>
-            <textarea id="pf-summary" placeholder="Brief professional summary…"></textarea>
+            <textarea id="pf-summary" style="min-height:90px"></textarea>
           </div>
           <div class="field full">
             <label>Skills</label>
-            <div class="skills-input-wrap">
-              <input type="text" id="pf-skills-input" placeholder="Type a skill and press Enter">
-            </div>
+            <input type="text" id="pf-skills-input" placeholder="Type a skill and press Enter">
             <div class="skills-tags" id="pf-skills-tags"></div>
           </div>
         </div>
@@ -277,132 +636,36 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
       <!-- Right: resume + accounts -->
       <div style="display:flex;flex-direction:column;gap:16px">
         <div class="card" style="padding:20px">
-          <h2 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--fg)">Resume</h2>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:16px">Resume</div>
           <label class="resume-zone" id="resumeZone">
             <input type="file" id="resumeInput" accept=".pdf">
-            <div class="rz-icon">📄</div>
-            <h3>Upload Resume</h3>
-            <p>PDF only — used when auto-applying</p>
+            <div style="font-size:28px;margin-bottom:8px">📄</div>
+            <div style="font-size:14px;font-weight:600" id="resumeZoneTitle">Upload Resume</div>
+            <div style="font-size:12px;color:var(--fg-muted);margin-top:3px">PDF only — drag & drop or click</div>
           </label>
           <div class="resume-status" id="resumeStatus" hidden>
             <span>✓</span><span id="resumeStatusText">resume.pdf uploaded</span>
             <a href="/api/profile/resume" target="_blank" style="margin-left:auto;font-size:12px;color:var(--accent)">View ↗</a>
           </div>
+          <div id="extractedBannerWrap"></div>
         </div>
-
         <div class="card" style="padding:20px">
-          <h2 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--fg)">Connected Accounts</h2>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:14px">Connected Accounts</div>
           <div id="accountsGridProfile" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
       </div>
     </div>
-  </div>
+  </div><!-- /profile -->
 
-  <div class="tab-content active" id="tab-dashboard">
-
-  <!-- Connected Accounts -->
-  <div class="accounts-panel" id="accountsPanel">
-    <div class="accounts-header">
-      <span class="accounts-title">Connected Accounts</span>
-      <span class="accounts-sub">Log in once — sessions are saved automatically</span>
-    </div>
-    <div class="accounts-grid" id="accountsGrid">
-      <div class="account-card skeleton"></div>
-      <div class="account-card skeleton"></div>
-      <div class="account-card skeleton"></div>
-      <div class="account-card skeleton"></div>
-    </div>
-  </div>
-
-  <!-- Crawl panel -->
-  <div class="crawl-panel">
-    <div class="crawl-row">
-      <input class="site-input" id="siteInput" placeholder="Enter site URL — e.g. naukri.com or linkedin.com/jobs" />
-      <button class="btn btn-primary" id="crawlBtn">▶ Start Crawl</button>
-      <button class="btn btn-ghost" id="stopBtn" style="display:none">■ Stop</button>
-    </div>
-
-    <div class="site-chips" id="siteChips">
-      <span class="chip" data-site="linkedin.com">LinkedIn</span>
-      <span class="chip" data-site="naukri.com">Naukri</span>
-      <span class="chip" data-site="indeed.com">Indeed</span>
-      <span class="chip" data-site="wellfound.com">Wellfound</span>
-      <span class="chip" data-site="weworkremotely.com">WeWorkRemotely</span>
-      <span class="chip" data-site="greenhouse.io">Greenhouse</span>
-      <span class="chip" data-site="lever.co">Lever</span>
-    </div>
-
-    <div class="toggle-row">
-      <label class="toggle">
-        <input type="checkbox" id="autoApplyToggle">
-        <span class="slider"></span>
-      </label>
-      <span class="toggle-label">Auto-apply to jobs</span>
-      <span class="toggle-warn" id="autoApplyWarn" hidden>⚠ Will submit real applications</span>
-    </div>
-
-    <div class="log-box" id="logBox">
-      <div class="log-inner" id="logInner"></div>
-    </div>
-
-    <!-- divider -->
-    <div class="divider">or upload existing data</div>
-
-    <div class="upload-row">
-      <label class="btn btn-ghost" style="cursor:pointer">
-        ↑ Upload applied.json
-        <input type="file" id="fileInput" accept=".json" style="display:none">
-      </label>
-      <span class="mono" id="uploadMsg" style="font-size:12px"></span>
-    </div>
-  </div>
-
-  <!-- Stat tiles -->
-  <div class="tiles">
-    <div class="tile"><div class="tile-label">Total Found</div><div class="tile-value" id="statTotal">—</div><div class="tile-sub">all sources</div></div>
-    <div class="tile applied"><div class="tile-label">Applied</div><div class="tile-value" id="statApplied">—</div><div class="tile-sub">submitted</div></div>
-    <div class="tile skipped"><div class="tile-label">Skipped</div><div class="tile-value" id="statSkipped">—</div><div class="tile-sub">not auto-applied</div></div>
-    <div class="tile failed"><div class="tile-label">Failed</div><div class="tile-value" id="statFailed">—</div><div class="tile-sub">errors</div></div>
-    <div class="tile"><div class="tile-label">Already Applied</div><div class="tile-value" id="statDup">—</div><div class="tile-sub">duplicates</div></div>
-  </div>
-
-  <!-- Charts -->
-  <div class="charts">
-    <div class="card"><h2>By Status</h2><div class="chart-wrap donut"><canvas id="statusChart" height="220"></canvas></div></div>
-    <div class="card"><h2>By Source</h2><div class="chart-wrap"><canvas id="sourceChart" height="220"></canvas></div></div>
-  </div>
-
-  <!-- Table -->
-  <div class="table-card">
-    <div class="table-header">
-      <h2>All Jobs</h2>
-      <div class="filter-row" id="filters">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="applied">Applied</button>
-        <button class="filter-btn" data-filter="skipped">Skipped</button>
-        <button class="filter-btn" data-filter="failed">Failed</button>
-        <button class="filter-btn" data-filter="already_applied">Already Applied</button>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Job</th><th>Source</th><th>Location</th><th>Status</th><th>Date</th></tr></thead>
-        <tbody id="jobsTable">
-          <tr><td colspan="5" class="empty"><strong>No data yet</strong>Enter a site above and start crawling</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  </div><!-- end tab-dashboard -->
 </div>
-</div><!-- end appContent -->
+</div><!-- /appContent -->
 
 <script>
 const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 let allJobs = [], statusChart = null, sourceChart = null, activeFilter = 'all';
 let evtSource = null;
 
-// ── theme ────────────────────────────────────────────────
+// ── theme ──────────────────────────────────────────────────
 const themeBtn = document.getElementById('themeToggle');
 let theme = (() => { try { return localStorage.getItem('theme') || 'system'; } catch { return 'system'; } })();
 applyTheme(theme);
@@ -410,443 +673,20 @@ function applyTheme(t) {
   theme = t;
   if (t === 'dark') { document.documentElement.setAttribute('data-theme','dark'); themeBtn.textContent='☀️'; }
   else if (t === 'light') { document.documentElement.setAttribute('data-theme','light'); themeBtn.textContent='🌙'; }
-  else { document.documentElement.removeAttribute('data-theme');
-    themeBtn.textContent = window.matchMedia('(prefers-color-scheme:dark)').matches ? '☀️' : '🌙'; }
+  else {
+    document.documentElement.removeAttribute('data-theme');
+    themeBtn.textContent = window.matchMedia('(prefers-color-scheme:dark)').matches ? '☀️' : '🌙';
+  }
   try { localStorage.setItem('theme', t); } catch {}
-  if (statusChart || sourceChart) setTimeout(() => { if (allJobs.length) loadStats(); }, 50);
+  setTimeout(() => { if (allJobs.length) renderCharts(computeStatsFromJobs(allJobs)); }, 50);
 }
 themeBtn.addEventListener('click', () => applyTheme(theme === 'dark' ? 'light' : 'dark'));
 
-// ── site chips ───────────────────────────────────────────
-document.getElementById('siteChips').addEventListener('click', e => {
-  const chip = e.target.closest('.chip');
-  if (!chip) return;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  chip.classList.add('active');
-  document.getElementById('siteInput').value = chip.dataset.site;
-});
-
-// ── auto-apply toggle ────────────────────────────────────
-const autoApplyToggle = document.getElementById('autoApplyToggle');
-const autoApplyWarn = document.getElementById('autoApplyWarn');
-autoApplyToggle.addEventListener('change', () => {
-  autoApplyWarn.hidden = !autoApplyToggle.checked;
-});
-
-// ── colors ───────────────────────────────────────────────
 function cssVar(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
-const STATUS_COLORS = { applied: ()=>cssVar('--green'), skipped: ()=>cssVar('--amber'), failed: ()=>cssVar('--red'), already_applied: ()=>cssVar('--blue') };
-const SOURCE_PALETTE = ['#7577f8','#22c55e','#f59e0b','#ef4444','#38bdf8','#a78bfa','#fb923c'];
-
-// ── charts ───────────────────────────────────────────────
-function makeDonut(labels, data, colors) {
-  const ctx = document.getElementById('statusChart');
-  if (statusChart) { statusChart.destroy(); statusChart = null; }
-  if (!data.some(d => d > 0)) return;
-  statusChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: cssVar('--surface'), hoverOffset: 4 }] },
-    options: { cutout: '68%', responsive: true,
-      plugins: { legend: { position: 'bottom', labels: { color: cssVar('--fg-muted'), font: { size: 12, family: 'Inter' }, padding: 10, boxWidth: 10, boxHeight: 10 } } } }
-  });
-}
-function makeBar(labels, data) {
-  const ctx = document.getElementById('sourceChart');
-  if (sourceChart) { sourceChart.destroy(); sourceChart = null; }
-  if (!labels.length) return;
-  sourceChart = new Chart(ctx, {
-    type: 'bar',
-    data: { labels, datasets: [{ data, backgroundColor: SOURCE_PALETTE.slice(0, labels.length), borderRadius: 6, borderSkipped: false }] },
-    options: { responsive: true, indexAxis: 'y',
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: cssVar('--border') }, ticks: { color: cssVar('--fg-muted'), font: { size: 11 } }, beginAtZero: true },
-        y: { grid: { display: false }, ticks: { color: cssVar('--fg'), font: { size: 12 } } }
-      } }
-  });
-}
-
-// ── render stats ─────────────────────────────────────────
-function render(stats) {
-  document.getElementById('statTotal').textContent = stats.total;
-  document.getElementById('statApplied').textContent = stats.byStatus.applied || 0;
-  document.getElementById('statSkipped').textContent = stats.byStatus.skipped || 0;
-  document.getElementById('statFailed').textContent  = stats.byStatus.failed  || 0;
-  document.getElementById('statDup').textContent     = stats.byStatus.already_applied || 0;
-  const sKeys = Object.keys(stats.byStatus).filter(k => stats.byStatus[k] > 0);
-  makeDonut(sKeys, sKeys.map(k => stats.byStatus[k]), sKeys.map(k => STATUS_COLORS[k]?.() || '#888'));
-  const srcKeys = Object.keys(stats.bySource).sort((a,b) => stats.bySource[b]-stats.bySource[a]);
-  makeBar(srcKeys, srcKeys.map(k => stats.bySource[k]));
-  allJobs = stats.all || [];
-  renderTable(activeFilter);
-}
-
-function renderTable(filter) {
-  activeFilter = filter;
-  const rows = filter === 'all' ? allJobs : allJobs.filter(j => j.status === filter);
-  const tbody = document.getElementById('jobsTable');
-  if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty"><strong>No ${filter==='all'?'':filter+' '}jobs</strong>Try a different filter</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = rows.map(j => {
-    const badge = j.status === 'already_applied' ? `<span class="badge badge-already">Already</span>` : `<span class="badge badge-${j.status}">${j.status}</span>`;
-    const date = j.appliedAt ? new Date(j.appliedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—';
-    const link = j.url ? `<a href="${j.url}" target="_blank" rel="noopener">${esc(j.title)}</a>` : esc(j.title);
-    return `<tr><td><div class="job-title">${link}</div><div class="job-company">${esc(j.company)}</div></td>
-      <td><span class="badge badge-source">${esc(j.source)}</span></td>
-      <td style="color:var(--fg-muted);font-size:12px">${esc(j.location||'—')}</td>
-      <td>${badge}</td><td class="mono">${date}</td></tr>`;
-  }).join('');
-}
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ── log ──────────────────────────────────────────────────
-function addLog(msg, type = '') {
-  const box = document.getElementById('logBox');
-  const inner = document.getElementById('logInner');
-  box.classList.add('open');
-  const line = document.createElement('div');
-  line.className = `log-line ${type}`;
-  const ts = new Date().toLocaleTimeString('en-IN', { hour12: false });
-  line.textContent = `[${ts}] ${msg}`;
-  inner.appendChild(line);
-  inner.scrollTop = inner.scrollHeight;
-}
-function clearLog() {
-  document.getElementById('logInner').innerHTML = '';
-  document.getElementById('logBox').classList.remove('open');
-}
-
-// ── SSE ──────────────────────────────────────────────────
-function connectSSE() {
-  if (evtSource) { evtSource.close(); evtSource = null; }
-  evtSource = new EventSource(`${API}/api/events`);
-  evtSource.addEventListener('log', e => {
-    const { msg } = JSON.parse(e.data);
-    const type = msg.startsWith('Done') || msg.startsWith('✓') ? 'ok' : msg.startsWith('Error') ? 'err' : '';
-    addLog(msg, type);
-  });
-  evtSource.addEventListener('done', e => {
-    const { stats } = JSON.parse(e.data);
-    if (stats) render(stats);
-    setCrawling(false);
-  });
-  evtSource.addEventListener('error', e => {
-    try { const { msg } = JSON.parse(e.data); addLog(msg, 'err'); } catch {}
-    setCrawling(false);
-  });
-  evtSource.addEventListener('status', e => {
-    const { running } = JSON.parse(e.data);
-    setCrawling(running);
-  });
-  evtSource.addEventListener('auth_status', e => {
-    renderAccounts(JSON.parse(e.data));
-  });
-}
-
-// ── crawl UI state ───────────────────────────────────────
-const crawlBtn = document.getElementById('crawlBtn');
-const stopBtn  = document.getElementById('stopBtn');
-function setCrawling(running) {
-  crawlBtn.disabled = running;
-  crawlBtn.textContent = running ? '⏳ Crawling…' : '▶ Start Crawl';
-  stopBtn.style.display = running ? '' : 'none';
-}
-
-// ── start crawl ──────────────────────────────────────────
-crawlBtn.addEventListener('click', async () => {
-  const site = document.getElementById('siteInput').value.trim();
-  if (!site) { addLog('Please enter a site URL or pick one above', 'err'); return; }
-  const autoApply = document.getElementById('autoApplyToggle').checked;
-  clearLog();
-  addLog(`Connecting to ${site}…`);
-  try {
-    const res = await fetch(`${API}/api/crawl`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ site, autoApply })
-    });
-    const json = await res.json();
-    if (!res.ok) { addLog(json.error, 'err'); return; }
-    addLog(`Crawler started for ${json.source}`);
-    setCrawling(true);
-    connectSSE();
-  } catch {
-    addLog('Cannot reach server — make sure you ran: npm run server', 'err');
-  }
-});
-
-stopBtn.addEventListener('click', () => {
-  if (evtSource) { evtSource.close(); evtSource = null; }
-  setCrawling(false);
-  addLog('Crawl stopped by user');
-});
-
-// ── filter buttons ───────────────────────────────────────
-document.getElementById('filters').addEventListener('click', e => {
-  const btn = e.target.closest('.filter-btn');
-  if (!btn) return;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable(btn.dataset.filter);
-});
-
-// ── upload fallback ──────────────────────────────────────
-document.getElementById('fileInput').addEventListener('change', async e => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  const msg = document.getElementById('uploadMsg');
-  try {
-    const fd = new FormData(); fd.append('file', file);
-    const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error);
-    msg.textContent = `✓ ${json.count} jobs loaded`;
-    msg.style.color = 'var(--green)';
-    await loadStats();
-  } catch {
-    // offline fallback
-    try {
-      const text = await file.text();
-      parseClientSide(JSON.parse(text));
-      msg.textContent = `✓ ${JSON.parse(await file.text()).length} jobs (offline)`;
-      msg.style.color = 'var(--green)';
-    } catch (err2) {
-      msg.textContent = err2.message;
-      msg.style.color = 'var(--red)';
-    }
-  }
-});
-
-function parseClientSide(results) {
-  const byStatus = { applied:0, skipped:0, failed:0, already_applied:0 };
-  const bySource = {};
-  for (const r of results) {
-    byStatus[r.status] = (byStatus[r.status]||0)+1;
-    bySource[r.job.source] = (bySource[r.job.source]||0)+1;
-  }
-  render({ total: results.length, byStatus, bySource, byDate: {},
-    all: results.map(r => ({ title:r.job.title, company:r.job.company, source:r.job.source,
-      location:r.job.location, url:r.job.url, appliedAt:r.appliedAt||r.job.foundAt, status:r.status })) });
-}
-
-// ── tabs ─────────────────────────────────────────────────
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-  });
-});
-
-// ── profile ───────────────────────────────────────────────
-let skills = [];
-
-async function loadProfile() {
-  try {
-    const res = await fetch(`${API}/api/profile`);
-    const p = await res.json();
-    document.getElementById('pf-first').value     = p.firstName || '';
-    document.getElementById('pf-last').value      = p.lastName  || '';
-    document.getElementById('pf-email').value     = p.email     || '';
-    document.getElementById('pf-phone').value     = p.phone     || '';
-    document.getElementById('pf-role').value      = p.currentRole || '';
-    document.getElementById('pf-exp').value       = p.yearsOfExperience || '';
-    document.getElementById('pf-linkedin').value  = p.linkedinUrl || '';
-    document.getElementById('pf-github').value    = p.githubUrl  || '';
-    document.getElementById('pf-portfolio').value = p.portfolioUrl || '';
-    document.getElementById('pf-summary').value   = p.summary   || '';
-    skills = p.skills || [];
-    renderSkills();
-    if (p.resumePath) showResumeUploaded('resume.pdf');
-  } catch {}
-}
-
-function renderSkills() {
-  const wrap = document.getElementById('pf-skills-tags');
-  wrap.innerHTML = skills.map((s,i) =>
-    `<span class="skill-tag">${esc(s)}<button onclick="removeSkill(${i})">×</button></span>`
-  ).join('');
-}
-function removeSkill(i) { skills.splice(i,1); renderSkills(); }
-
-document.getElementById('pf-skills-input').addEventListener('keydown', e => {
-  if (e.key !== 'Enter' && e.key !== ',') return;
-  e.preventDefault();
-  const val = e.target.value.trim();
-  if (val && !skills.includes(val)) { skills.push(val); renderSkills(); }
-  e.target.value = '';
-});
-
-document.getElementById('saveProfileBtn').addEventListener('click', async () => {
-  const body = {
-    firstName:         document.getElementById('pf-first').value.trim(),
-    lastName:          document.getElementById('pf-last').value.trim(),
-    email:             document.getElementById('pf-email').value.trim(),
-    phone:             document.getElementById('pf-phone').value.trim(),
-    currentRole:       document.getElementById('pf-role').value.trim(),
-    yearsOfExperience: Number(document.getElementById('pf-exp').value) || 0,
-    linkedinUrl:       document.getElementById('pf-linkedin').value.trim(),
-    githubUrl:         document.getElementById('pf-github').value.trim(),
-    portfolioUrl:      document.getElementById('pf-portfolio').value.trim(),
-    summary:           document.getElementById('pf-summary').value.trim(),
-    skills,
-  };
-  const res = await fetch(`${API}/api/profile`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  if (res.ok) {
-    const msg = document.getElementById('saveMsgProfile');
-    msg.hidden = false;
-    setTimeout(() => { msg.hidden = true; }, 2500);
-  }
-});
-
-// Resume upload
-function showResumeUploaded(name) {
-  document.getElementById('resumeStatusText').textContent = name + ' uploaded';
-  document.getElementById('resumeStatus').hidden = false;
-}
-
-async function uploadResume(file) {
-  const zone = document.getElementById('resumeZone');
-  zone.querySelector('h3').textContent = 'Uploading…';
-  const fd = new FormData(); fd.append('resume', file);
-  try {
-    const res = await fetch(`${API}/api/profile/resume`, { method:'POST', body: fd });
-    const data = await res.json();
-    if (!res.ok) { zone.querySelector('h3').textContent = 'Upload Resume'; alert(data.error || 'Upload failed'); return; }
-    showResumeUploaded(file.name);
-    zone.querySelector('h3').textContent = 'Upload Resume';
-    if (data.extracted) showExtractedBanner(data.extracted);
-  } catch { zone.querySelector('h3').textContent = 'Upload Resume'; }
-}
-
-function showExtractedBanner(ext) {
-  let banner = document.getElementById('extractedBanner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id = 'extractedBanner';
-    banner.style.cssText = 'background:var(--green-bg);border:1px solid var(--green);border-radius:10px;padding:14px 16px;margin-top:12px;font-size:13px';
-    document.getElementById('resumeZone').parentNode.appendChild(banner);
-  }
-  const fields = ['firstName','lastName','email','phone','currentRole','linkedinUrl','githubUrl','summary'];
-  const filled = fields.filter(f => ext[f]);
-  banner.innerHTML = `<div style="font-weight:600;color:var(--green);margin-bottom:8px">✓ Extracted ${filled.length} fields from your resume</div>
-    <div style="color:var(--fg-muted);margin-bottom:10px;font-size:12px">${filled.map(f => f.replace(/([A-Z])/g,' $1').trim()).join(' · ')}</div>
-    <button class="btn btn-primary" id="applyExtractedBtn" style="font-size:12px;padding:6px 14px">Fill Profile with Extracted Data</button>`;
-  document.getElementById('applyExtractedBtn').addEventListener('click', () => {
-    const map = { 'pf-first':'firstName','pf-last':'lastName','pf-email':'email','pf-phone':'phone',
-      'pf-role':'currentRole','pf-linkedin':'linkedinUrl','pf-github':'githubUrl','pf-portfolio':'portfolioUrl',
-      'pf-summary':'summary','pf-exp':'yearsOfExperience' };
-    for (const [id, key] of Object.entries(map)) {
-      const el = document.getElementById(id); if (el && ext[key]) el.value = ext[key];
-    }
-    if (ext.skills?.length) {
-      skills = [...new Set([...skills, ...ext.skills])];
-      renderSkillTags();
-    }
-    banner.innerHTML = '<div style="color:var(--green);font-weight:600">✓ Profile filled — review and hit Save Profile</div>';
-  });
-}
-
-document.getElementById('resumeInput').addEventListener('change', async e => {
-  const file = e.target.files?.[0]; if (!file) return;
-  await uploadResume(file);
-});
-
-const resumeZone = document.getElementById('resumeZone');
-resumeZone.addEventListener('dragover', e => { e.preventDefault(); resumeZone.classList.add('drag'); });
-resumeZone.addEventListener('dragleave', () => resumeZone.classList.remove('drag'));
-resumeZone.addEventListener('drop', async e => {
-  e.preventDefault(); resumeZone.classList.remove('drag');
-  const file = e.dataTransfer?.files?.[0]; if (!file) return;
-  await uploadResume(file);
-});
-
-// ── accounts ─────────────────────────────────────────────
-const SOURCE_ICONS = { linkedin:'💼', indeed:'🔍', naukri:'🇮🇳', wellfound:'🚀', greenhouse:'🌿', lever:'⚙️', weworkremotely:'🌍' };
-let connectingSource = null;
-
-async function loadAuthStatus() {
-  try {
-    const res = await fetch(`${API}/api/auth/status`);
-    const status = await res.json();
-    renderAccounts(status);
-  } catch { /* server not up yet */ }
-}
-
-function accountsHTML(status) {
-  return Object.entries(status).map(([src, info]) => {
-    const icon = SOURCE_ICONS[src] || '🔗';
-    const isConnecting = connectingSource === src;
-    let statusHtml, actionHtml;
-    if (info.noLoginNeeded) {
-      statusHtml = `<span class="account-status status-api">API — no login needed</span>`;
-      actionHtml = `<span style="font-size:18px">✅</span>`;
-    } else if (isConnecting) {
-      statusHtml = `<span class="account-status status-none">Opening browser…</span>`;
-      actionHtml = `<span class="btn-connecting">Connecting…</span>`;
-    } else if (info.connected) {
-      statusHtml = `<span class="account-status status-connected">● Connected</span>`;
-      actionHtml = `<button class="btn-disconnect" onclick="disconnectSource('${src}')">Disconnect</button>`;
-    } else {
-      statusHtml = `<span class="account-status status-none">Not connected</span>`;
-      actionHtml = `<button class="btn-connect" onclick="connectSource('${src}')">Connect</button>`;
-    }
-    return `<div class="account-card">
-      <div class="account-left">
-        <div class="account-icon">${icon}</div>
-        <div><div class="account-name">${info.label}</div>${statusHtml}</div>
-      </div>
-      ${actionHtml}
-    </div>`;
-  }).join('');
-}
-
-function renderAccounts(status) {
-  const html = accountsHTML(status);
-  const g1 = document.getElementById('accountsGrid');
-  const g2 = document.getElementById('accountsGridProfile');
-  if (g1) g1.innerHTML = html;
-  if (g2) g2.innerHTML = html;
-}
-
-async function connectSource(src) {
-  connectingSource = src;
-  await loadAuthStatus();
-  addLog(`Opening ${src} login — check the browser window that appears`);
-  document.getElementById('logBox').classList.add('open');
-  try {
-    const res = await fetch(`${API}/api/auth/login`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ source: src })
-    });
-    if (!res.ok) { const e = await res.json(); addLog(e.error, 'err'); }
-  } catch { addLog('Cannot reach server', 'err'); }
-  connectingSource = null;
-}
-
-async function disconnectSource(src) {
-  await fetch(`${API}/api/auth/disconnect`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ source: src })
-  });
-  await loadAuthStatus();
-}
-
-// ── initial load ─────────────────────────────────────────
-async function loadStats() {
-  try {
-    const res = await fetch(`${API}/api/stats`);
-    const stats = await res.json();
-    if (stats.total > 0) render(stats);
-    const status = await (await fetch(`${API}/api/crawl/status`)).json();
-    if (status.running) { setCrawling(true); connectSSE(); }
-  } catch {}
-}
-// ── app-level password gate ───────────────────────────────
+// ── password gate ──────────────────────────────────────────
 const LOGIN_KEY = 'app_unlocked';
-
 let passwordProtected = false;
 
 async function checkAppLogin() {
@@ -860,26 +700,18 @@ async function checkAppLogin() {
     showLogin();
   } catch { showApp(); }
 }
-
 function showLogin() {
   document.getElementById('loginScreen').hidden = false;
   document.getElementById('appContent').hidden = true;
 }
-
 function showApp() {
   const login = document.getElementById('loginScreen');
   const content = document.getElementById('appContent');
-  // force display in case hidden attribute alone isn't enough
-  login.style.display = 'none';
-  content.style.display = 'block';
-  login.hidden = true;
-  content.hidden = false;
+  login.style.display = 'none'; content.style.display = 'block';
+  login.hidden = true; content.hidden = false;
   document.getElementById('logoutBtn').style.display = passwordProtected ? '' : 'none';
-  try { loadStats(); } catch {}
-  try { loadAuthStatus(); } catch {}
-  try { loadProfile(); } catch {}
+  loadStats(); loadAuthStatus(); loadProfile();
 }
-
 document.getElementById('appLoginBtn').addEventListener('click', async () => {
   const pw = document.getElementById('appPassword').value;
   const err = document.getElementById('loginErr');
@@ -889,23 +721,724 @@ document.getElementById('appLoginBtn').addEventListener('click', async () => {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ password: pw })
     });
-    if (res.ok) {
-      try { localStorage.setItem(LOGIN_KEY, '1'); } catch {}
-      showApp();
-    } else {
-      err.hidden = false;
-    }
+    if (res.ok) { try { localStorage.setItem(LOGIN_KEY, '1'); } catch {} showApp(); }
+    else { err.hidden = false; }
   } catch { err.textContent = 'Cannot reach server'; err.hidden = false; }
 });
-
-document.getElementById('appPassword').addEventListener('keydown', (e) => {
+document.getElementById('appPassword').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('appLoginBtn').click();
 });
-
 document.getElementById('logoutBtn').addEventListener('click', () => {
   try { localStorage.removeItem(LOGIN_KEY); } catch {}
   showLogin();
 });
 
+// ── tabs ───────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'history') loadRuns();
+    if (btn.dataset.tab === 'analytics') { if (allJobs.length) renderAnalytics(computeStatsFromJobs(allJobs)); loadAnalytics(); }
+    if (btn.dataset.tab === 'naukri') loadNaukriStats();
+  });
+});
+
+// ── site chips ─────────────────────────────────────────────
+document.getElementById('siteChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  document.getElementById('siteInput').value = chip.dataset.site;
+});
+
+document.getElementById('autoApplyToggle').addEventListener('change', e => {
+  document.getElementById('autoApplyWarn').hidden = !e.target.checked;
+});
+
+// ── stats & rendering ──────────────────────────────────────
+function computeStatsFromJobs(jobs) {
+  const byStatus = { applied:0, skipped:0, failed:0, already_applied:0 };
+  const bySource = {}, byDate = {}, byCo = {};
+  for (const j of jobs) {
+    byStatus[j.status] = (byStatus[j.status]||0)+1;
+    bySource[j.source] = (bySource[j.source]||0)+1;
+    byCo[j.company]    = (byCo[j.company]||0)+1;
+    const d = (j.appliedAt||j.foundAt||'').slice(0,10);
+    if (d) byDate[d] = (byDate[d]||0)+1;
+  }
+  return { total:jobs.length, byStatus, bySource, byDate, byCo, all:jobs };
+}
+
+function renderOverview(stats) {
+  document.getElementById('statTotal').textContent   = stats.total;
+  document.getElementById('statApplied').textContent = stats.byStatus.applied  || 0;
+  document.getElementById('statSkipped').textContent = stats.byStatus.skipped  || 0;
+  document.getElementById('statFailed').textContent  = stats.byStatus.failed   || 0;
+  const rate = stats.total > 0 ? Math.round((stats.byStatus.applied / stats.total) * 100) : 0;
+  document.getElementById('statRate').textContent = rate + '%';
+  renderTable(activeFilter);
+}
+
+function renderCharts(stats) {
+  // Status donut
+  const ctx = document.getElementById('statusChart');
+  if (statusChart) { statusChart.destroy(); statusChart = null; }
+  const skKeys = Object.keys(stats.byStatus).filter(k => stats.byStatus[k] > 0);
+  const colorMap = {
+    applied: ()=>cssVar('--green'), skipped: ()=>cssVar('--amber'),
+    failed: ()=>cssVar('--red'), already_applied: ()=>cssVar('--blue')
+  };
+  if (skKeys.length) {
+    statusChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels: skKeys, datasets: [{ data: skKeys.map(k=>stats.byStatus[k]),
+        backgroundColor: skKeys.map(k=>colorMap[k]?.()||'#888'),
+        borderWidth: 2, borderColor: cssVar('--surface'), hoverOffset: 4 }] },
+      options: { cutout:'68%', responsive:true,
+        plugins:{ legend:{ position:'bottom', labels:{ color:cssVar('--fg-muted'), font:{size:12,family:'Inter'}, padding:10, boxWidth:10, boxHeight:10 } } } }
+    });
+  }
+  // Source bar
+  const ctx2 = document.getElementById('sourceChart');
+  if (sourceChart) { sourceChart.destroy(); sourceChart = null; }
+  const srcKeys = Object.keys(stats.bySource).sort((a,b)=>stats.bySource[b]-stats.bySource[a]);
+  if (srcKeys.length) {
+    const pal = ['#9d6ef8','#22c55e','#f59e0b','#ef4444','#38bdf8','#a78bfa','#fb923c'];
+    sourceChart = new Chart(ctx2, {
+      type:'bar', data:{ labels:srcKeys, datasets:[{ data:srcKeys.map(k=>stats.bySource[k]),
+        backgroundColor:pal.slice(0,srcKeys.length), borderRadius:6, borderSkipped:false }] },
+      options:{ responsive:true, indexAxis:'y',
+        plugins:{ legend:{ display:false } },
+        scales:{
+          x:{ grid:{ color:cssVar('--border') }, ticks:{ color:cssVar('--fg-muted'), font:{size:11} }, beginAtZero:true },
+          y:{ grid:{ display:false }, ticks:{ color:cssVar('--fg'), font:{size:12} } }
+        } }
+    });
+  }
+}
+
+function renderAnalytics(stats) {
+  renderCharts(stats);
+  renderFunnel(stats);
+  renderTopCompanies(stats);
+  renderHeatmap(stats);
+}
+
+function renderFunnel(stats) {
+  const container = document.getElementById('funnelBars');
+  if (!stats.total) { container.innerHTML = '<div class="empty" style="padding:24px"><strong>No data</strong>Run a crawl first</div>'; return; }
+  const rows = [
+    { label:'Found',   value:stats.total,              color:'linear-gradient(90deg,#9d6ef8,#7c3aed)', pct:100 },
+    { label:'Applied', value:stats.byStatus.applied||0, color:'linear-gradient(90deg,#4ade80,#16a34a)', pct:Math.round(((stats.byStatus.applied||0)/stats.total)*100) },
+    { label:'Skipped', value:stats.byStatus.skipped||0, color:'linear-gradient(90deg,#fbbf24,#d97706)', pct:Math.round(((stats.byStatus.skipped||0)/stats.total)*100) },
+    { label:'Failed',  value:stats.byStatus.failed||0,  color:'linear-gradient(90deg,#f87171,#dc2626)', pct:Math.round(((stats.byStatus.failed||0)/stats.total)*100) },
+  ];
+  container.innerHTML = rows.map(r => `
+    <div class="funnel-row">
+      <div class="funnel-label">${r.label}</div>
+      <div class="funnel-bar-wrap">
+        <div class="funnel-bar" style="width:${r.pct}%;background:${r.color}">
+          <span>${r.pct}%</span>
+        </div>
+      </div>
+      <div class="funnel-count">${r.value}</div>
+    </div>`).join('');
+}
+
+function renderTopCompanies(stats) {
+  const container = document.getElementById('topCompanies');
+  const sorted = Object.entries(stats.byCo).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if (!sorted.length) { container.innerHTML = '<div class="empty" style="padding:24px"><strong>No data</strong></div>'; return; }
+  const max = sorted[0][1];
+  container.innerHTML = sorted.map(([co, n]) => `
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:13px;width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${esc(co)}</div>
+      <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${Math.round((n/max)*100)}%;background:var(--a-grad);border-radius:4px;transition:width .8s ease"></div>
+      </div>
+      <div class="mono" style="width:24px;text-align:right">${n}</div>
+    </div>`).join('');
+}
+
+function renderHeatmap(stats) {
+  const grid = document.getElementById('heatmapGrid');
+  const monthLabels = document.getElementById('heatmapMonths');
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const days = 91;
+  const start = new Date(today); start.setDate(start.getDate() - days + 1);
+  // Adjust to Monday start
+  const dow = start.getDay(); // 0=Sun
+  const offset = (dow === 0) ? 6 : dow - 1;
+  start.setDate(start.getDate() - offset);
+
+  const totalDays = Math.ceil((today - start) / 86400000) + 1;
+  const weeks = Math.ceil(totalDays / 7);
+
+  // Build columns
+  let html = '', labelHtml = '', monthTrack = {};
+  for (let w = 0; w < weeks; w++) {
+    html += '<div class="heatmap-col">';
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(start); date.setDate(date.getDate() + w*7 + d);
+      if (date > today) { html += '<div class="heatmap-cell"></div>'; continue; }
+      const key = date.toISOString().slice(0,10);
+      const cnt = stats.byDate[key] || 0;
+      const level = cnt === 0 ? 0 : cnt === 1 ? 1 : cnt <= 3 ? 2 : cnt <= 5 ? 3 : 4;
+      const mo = date.toLocaleString('en',{month:'short'});
+      if (!monthTrack[mo]) { monthTrack[mo] = w; }
+      html += `<div class="heatmap-cell" data-l="${level}" title="${key}: ${cnt} applications"></div>`;
+    }
+    html += '</div>';
+  }
+
+  // Month labels
+  const labelCols = Array(weeks).fill('');
+  for (const [mo, w] of Object.entries(monthTrack)) labelCols[w] = mo;
+  monthLabels.innerHTML = labelCols.map(m =>
+    `<div class="heatmap-month" style="width:12px;flex-shrink:0;overflow:visible;white-space:nowrap">${m}</div>`
+  ).join('<div style="width:3px;flex-shrink:0"></div>');
+  grid.innerHTML = html;
+}
+
+// ── jobs table ─────────────────────────────────────────────
+function renderTable(filter) {
+  activeFilter = filter;
+  const rows = filter === 'all' ? allJobs : allJobs.filter(j => j.status === filter);
+  const tbody = document.getElementById('jobsTable');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty"><strong>No ${filter==='all'?'':filter+' '}jobs</strong></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(j => {
+    const badge = j.status === 'already_applied'
+      ? `<span class="badge badge-already">Already</span>`
+      : `<span class="badge badge-${j.status}">${j.status}</span>`;
+    const date = j.appliedAt ? new Date(j.appliedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—';
+    const link = j.url ? `<a href="${j.url}" target="_blank" rel="noopener">${esc(j.title)}</a>` : esc(j.title);
+    return `<tr>
+      <td><div class="job-title">${link}</div><div class="job-company">${esc(j.company)}</div></td>
+      <td><span class="badge badge-source">${esc(j.source)}</span></td>
+      <td style="color:var(--fg-muted);font-size:12px">${esc(j.location||'—')}</td>
+      <td>${badge}</td><td class="mono">${date}</td></tr>`;
+  }).join('');
+}
+
+// ── filter buttons ─────────────────────────────────────────
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn'); if (!btn) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active'); renderTable(btn.dataset.filter);
+});
+
+// ── log helpers ────────────────────────────────────────────
+function addLog(msg, type = '') {
+  const box = document.getElementById('logBox'), inner = document.getElementById('logInner');
+  box.classList.add('open');
+  const line = document.createElement('div');
+  line.className = `log-line ${type}`;
+  const ts = new Date().toLocaleTimeString('en-IN',{hour12:false});
+  line.textContent = `[${ts}] ${msg}`;
+  inner.appendChild(line); inner.scrollTop = inner.scrollHeight;
+}
+function clearLog() {
+  document.getElementById('logInner').innerHTML = '';
+  document.getElementById('logBox').classList.remove('open');
+}
+
+// ── SSE ────────────────────────────────────────────────────
+function connectSSE() {
+  if (evtSource) { evtSource.close(); evtSource = null; }
+  evtSource = new EventSource(`${API}/api/events`);
+  evtSource.addEventListener('log', e => {
+    const { msg } = JSON.parse(e.data);
+    addLog(msg, msg.startsWith('✓')||msg.startsWith('Done') ? 'ok' : msg.startsWith('✗')||msg.startsWith('Error')||msg.startsWith('Fatal') ? 'err' : '');
+  });
+  evtSource.addEventListener('done', e => {
+    const { stats } = JSON.parse(e.data); if (stats) render(stats); setCrawling(false);
+  });
+  evtSource.addEventListener('error', e => {
+    try { const { msg } = JSON.parse(e.data); addLog(msg,'err'); } catch {} setCrawling(false);
+  });
+  evtSource.addEventListener('status', e => { const { running } = JSON.parse(e.data); setCrawling(running); });
+  evtSource.addEventListener('auth_status', e => { renderAccounts(JSON.parse(e.data)); });
+}
+
+// ── crawl UI state ─────────────────────────────────────────
+const crawlBtn = document.getElementById('crawlBtn');
+const stopBtn  = document.getElementById('stopBtn');
+function setCrawling(running) {
+  crawlBtn.disabled = running;
+  crawlBtn.textContent = running ? '⏳ Crawling…' : '▶ Start Crawl';
+  stopBtn.style.display = running ? '' : 'none';
+  document.getElementById('crawlStatusBadge').hidden = !running;
+}
+
+crawlBtn.addEventListener('click', async () => {
+  const site = document.getElementById('siteInput').value.trim();
+  if (!site) { addLog('Please enter a site URL or pick one above','err'); return; }
+  const autoApply = document.getElementById('autoApplyToggle').checked;
+  const showBrowser = document.getElementById('showBrowserToggle').checked;
+  clearLog(); addLog(`Connecting to ${site}…`);
+  try {
+    const res = await fetch(`${API}/api/crawl`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ site, autoApply, showBrowser })
+    });
+    const json = await res.json();
+    if (!res.ok) { addLog(json.error,'err'); return; }
+    addLog(`Crawler started for ${json.source}`);
+    setCrawling(true); connectSSE();
+  } catch { addLog('Cannot reach server — make sure you ran: npm run server','err'); }
+});
+stopBtn.addEventListener('click', () => {
+  if (evtSource) { evtSource.close(); evtSource = null; }
+  setCrawling(false); addLog('Crawl stopped by user');
+});
+
+// ── load stats ─────────────────────────────────────────────
+function render(stats) {
+  allJobs = stats.all || [];
+  renderOverview(stats);
+  renderCharts(stats);
+  // Re-render analytics if visible
+  if (document.getElementById('tab-analytics').classList.contains('active')) renderAnalytics(stats);
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch(`${API}/api/stats`);
+    const stats = await res.json();
+    if (stats.total > 0) render(stats);
+    const status = await (await fetch(`${API}/api/crawl/status`)).json();
+    if (status.running) { setCrawling(true); connectSSE(); }
+  } catch {}
+}
+
+// ── file upload ────────────────────────────────────────────
+document.getElementById('fileInput').addEventListener('change', async e => {
+  const file = e.target.files?.[0]; if (!file) return;
+  const msg = document.getElementById('uploadMsg');
+  try {
+    const fd = new FormData(); fd.append('file', file);
+    const res = await fetch(`${API}/api/upload`, { method:'POST', body:fd });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error);
+    msg.textContent = `✓ ${json.count} jobs loaded`; msg.style.color = 'var(--green)';
+    await loadStats();
+  } catch (err) {
+    msg.textContent = err.message; msg.style.color = 'var(--red)';
+  }
+});
+
+// ── accounts ───────────────────────────────────────────────
+const SRC_ICONS = { linkedin:'💼', indeed:'🔍', naukri:'🇮🇳', wellfound:'🚀', greenhouse:'🌿', lever:'⚙️', weworkremotely:'🌍' };
+let connectingSource = null;
+
+async function loadAuthStatus() {
+  try {
+    const res = await fetch(`${API}/api/auth/status`);
+    renderAccounts(await res.json());
+  } catch {}
+}
+
+function accountsHTML(status) {
+  return Object.entries(status).map(([src, info]) => {
+    const icon = SRC_ICONS[src] || '🔗';
+    const isConn = connectingSource === src;
+    let statusHtml, actionHtml;
+    if (info.noLoginNeeded) {
+      statusHtml = `<span class="account-status status-api">API</span>`;
+      actionHtml = `<span style="font-size:18px">✅</span>`;
+    } else if (isConn) {
+      statusHtml = `<span class="account-status status-none">Opening browser…</span>`;
+      actionHtml = `<span class="btn-connecting">Connecting…</span>`;
+    } else if (info.connected) {
+      statusHtml = `<span class="account-status status-connected">● Connected</span>`;
+      actionHtml = `<button class="btn-disconnect" onclick="disconnectSource('${src}')">Disconnect</button>`;
+    } else {
+      statusHtml = `<span class="account-status status-none">Not connected</span>`;
+      actionHtml = `<button class="btn-connect" onclick="connectSource('${src}')">Connect</button>`;
+    }
+    return `<div class="account-card">
+      <div class="account-left">
+        <div class="account-icon">${icon}</div>
+        <div><div class="account-name">${info.label}</div>${statusHtml}</div>
+      </div>${actionHtml}</div>`;
+  }).join('');
+}
+
+function renderAccounts(status) {
+  const html = accountsHTML(status);
+  const g1 = document.getElementById('accountsGrid');
+  const g2 = document.getElementById('accountsGridProfile');
+  if (g1) g1.innerHTML = html;
+  if (g2) g2.innerHTML = html;
+}
+
+async function connectSource(src) {
+  connectingSource = src; await loadAuthStatus();
+  addLog(`Opening ${src} login — check browser window`);
+  document.getElementById('logBox').classList.add('open');
+  try {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ source:src })
+    });
+    if (!res.ok) { const e = await res.json(); addLog(e.error,'err'); }
+  } catch { addLog('Cannot reach server','err'); }
+  connectingSource = null;
+}
+async function disconnectSource(src) {
+  await fetch(`${API}/api/auth/disconnect`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ source:src })
+  });
+  await loadAuthStatus();
+}
+
+// ── naukri stats ───────────────────────────────────────────
+function connectNaukri() { connectSource('naukri'); }
+
+async function loadNaukriStats() {
+  try {
+    const [authRes] = await Promise.all([fetch(`${API}/api/auth/status`)]);
+    const authStatus = await authRes.json();
+    const naukriConnected = authStatus?.naukri?.connected;
+
+    if (!naukriConnected) {
+      document.getElementById('naukriConnectCta').hidden = false;
+      document.getElementById('naukriStats').hidden = true;
+      return;
+    }
+    document.getElementById('naukriConnectCta').hidden = true;
+    document.getElementById('naukriStats').hidden = false;
+
+    const perfRes = await fetch(`${API}/api/naukri/performance`);
+    const perf = await perfRes.json();
+
+    // Try to read common Naukri performance API fields
+    const views   = perf?.profileViews ?? perf?.totalViews ?? perf?.data?.profileViews ?? '—';
+    const searches = perf?.searchAppearances ?? perf?.totalSearchAppearances ?? perf?.data?.searchAppearances ?? '—';
+    const inmails  = perf?.inMails ?? perf?.totalInMails ?? perf?.data?.inMails ?? '—';
+    const applied  = perf?.applied ?? perf?.totalApplied ?? perf?.data?.applied ?? '—';
+    const score    = perf?.profileScore ?? perf?.score ?? perf?.data?.profileScore ?? 0;
+    const recos    = perf?.recommendations ?? perf?.data?.noOfRecommendedJobs ?? '—';
+
+    document.getElementById('nk-views').textContent    = views;
+    document.getElementById('nk-searches').textContent = searches;
+    document.getElementById('nk-inmails').textContent  = inmails;
+    document.getElementById('nk-applied').textContent  = applied;
+    document.getElementById('nk-recommendations').textContent = recos;
+
+    if (score) {
+      const pct = Math.min(100, score);
+      document.getElementById('nk-score-value').textContent = pct + '%';
+      document.getElementById('nk-score-bar').style.width   = pct + '%';
+      document.getElementById('nk-score-label').textContent =
+        pct >= 80 ? 'Excellent profile' : pct >= 60 ? 'Good — keep improving' : 'Needs attention';
+    }
+  } catch (err) {
+    console.error('Naukri stats:', err);
+  }
+  // always load career pages regardless of auth status
+  loadCareerPages();
+}
+
+async function loadCareerPages() {
+  try {
+    const res  = await fetch(`${API}/api/career-pages`);
+    const data = await res.json();
+    const list = document.getElementById('careerPagesList');
+    const countEl = document.getElementById('careerPageCount');
+    countEl.textContent = `${data.count} compan${data.count === 1 ? 'y' : 'ies'}`;
+    if (!data.pages || data.pages.length === 0) {
+      list.innerHTML = '<div style="font-size:13px;color:var(--fg-muted);text-align:center;padding:20px">Run a Naukri crawl to start collecting career pages</div>';
+      return;
+    }
+    list.innerHTML = data.pages.map(p => {
+      const links = [];
+      if (p.officialCareerUrl) links.push(`<a class="career-pill" href="${p.officialCareerUrl}" target="_blank">🌐 Official Careers</a>`);
+      if (p.naukriProfileUrl)  links.push(`<a class="career-pill" href="${p.naukriProfileUrl}"  target="_blank">🇮🇳 Naukri Profile</a>`);
+      return `<div class="career-row">
+        <div>
+          <div class="career-company">${esc(p.company)}</div>
+          <div style="font-size:11px;color:var(--fg-muted);margin-top:2px">Last seen ${p.lastSeenAt?.slice(0,10) ?? ''}</div>
+        </div>
+        <div class="career-links">${links.length ? links.join('') : '<span style="font-size:11px;color:var(--fg-muted)">No URL yet</span>'}</div>
+      </div>`;
+    }).join('');
+  } catch { /* ignore */ }
+}
+
+// ── analytics aggregation ──────────────────────────────────
+async function loadAnalytics() {
+  try {
+    const res = await fetch(`${API}/api/analytics`);
+    const data = await res.json();
+    renderSourcePerformance(data.bySource || {});
+  } catch {}
+}
+
+function renderSourcePerformance(bySource) {
+  const container = document.getElementById('sourcePerformanceTable');
+  const entries = Object.entries(bySource).sort((a, b) => b[1].totalFound - a[1].totalFound);
+  if (!entries.length) {
+    container.innerHTML = '<div class="empty" style="padding:24px"><strong>No crawl runs yet</strong>Start a crawl to see source analytics</div>';
+    return;
+  }
+  const rows = entries.map(([src, d]) => {
+    const applyRate = d.totalFound > 0 ? Math.round((d.applied / d.totalFound) * 100) : 0;
+    const avgFound  = d.runs > 0 ? Math.round(d.totalFound / d.runs) : 0;
+    const avgDur    = d.runs > 0 ? Math.round(d.totalDuration / d.runs / 1000) : 0;
+    const icon = {linkedin:'💼',indeed:'🔍',naukri:'🇮🇳',wellfound:'🚀',greenhouse:'🌿',lever:'⚙️',weworkremotely:'🌍'}[src] || '🔗';
+    return `<tr>
+      <td><span style="font-size:16px;margin-right:6px">${icon}</span><strong>${esc(src)}</strong></td>
+      <td class="mono">${d.runs}</td>
+      <td class="mono">${d.pagesVisited}</td>
+      <td class="mono">${d.totalFound} <span style="color:var(--fg-muted);font-size:11px">(${avgFound}/run)</span></td>
+      <td><span style="color:var(--green);font-weight:600">${d.applied}</span></td>
+      <td><span style="color:var(--amber)">${d.skipped}</span></td>
+      <td><span style="color:var(--red)">${d.failed}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:60px">
+            <div style="height:100%;width:${applyRate}%;background:var(--a-grad);border-radius:3px"></div>
+          </div>
+          <span class="mono">${applyRate}%</span>
+        </div>
+      </td>
+      <td class="mono">${avgDur}s</td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Source</th><th>Runs</th><th>Pages</th><th>Jobs Found</th>
+          <th>Applied</th><th>Skipped</th><th>Failed</th><th>Apply Rate</th><th>Avg Time</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── run history ────────────────────────────────────────────
+let expandedRunId = null, expandedRunTab = 'logs';
+
+async function loadRuns() {
+  try {
+    const res = await fetch(`${API}/api/runs`);
+    renderRuns(await res.json());
+  } catch { document.getElementById('runsList').innerHTML = '<div class="empty"><strong>Could not load history</strong></div>'; }
+}
+
+function renderRuns(runs) {
+  const list = document.getElementById('runsList');
+  if (!runs.length) { list.innerHTML = '<div class="empty"><strong>No runs yet</strong>Start a crawl on the Overview tab</div>'; return; }
+  list.innerHTML = runs.map(r => {
+    const dt = new Date(r.startedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});
+    const dotCls = r.status==='done' ? 'dot-done' : r.status==='running' ? 'dot-running' : 'dot-error';
+    const isOpen = expandedRunId === r._id;
+    const dur = r.durationMs ? `${Math.round(r.durationMs/1000)}s` : '';
+    const pages = r.pagesVisited ? `${r.pagesVisited} pages` : '';
+    const rate = r.totalFound > 0 ? Math.round((r.applied/r.totalFound)*100) + '% apply rate' : '';
+    const subParts = [r.totalFound + ' found', pages, dur, rate].filter(Boolean);
+    return `<div class="run-card" id="rcard-${r._id}">
+      <div class="run-header" onclick="toggleRun('${r._id}')">
+        <div class="run-dot ${dotCls}"></div>
+        <div class="run-source-badge">${esc(r.source)}</div>
+        <div class="run-meta">
+          <div class="run-title">${esc(r.source)} · ${dt}${r.autoApply?' · auto-apply':''}</div>
+          <div class="run-sub">${subParts.join(' · ')}</div>
+        </div>
+        <div class="run-stats">
+          <span class="run-stat ok">✓ ${r.applied}</span>
+          <span class="run-stat warn">⚠ ${r.skipped}</span>
+          <span class="run-stat err">✗ ${r.failed}</span>
+        </div>
+        <span style="color:var(--fg-muted);font-size:14px;margin-left:4px">${isOpen?'▲':'▼'}</span>
+      </div>
+      ${isOpen ? `<div class="run-body" id="rbody-${r._id}"><div class="empty" style="padding:20px">Loading…</div></div>` : ''}
+    </div>`;
+  }).join('');
+  if (expandedRunId) loadRunDetail(expandedRunId);
+}
+
+async function toggleRun(id) {
+  expandedRunId = expandedRunId === id ? null : id;
+  expandedRunTab = 'logs';
+  const res = await fetch(`${API}/api/runs`); renderRuns(await res.json());
+}
+
+async function loadRunDetail(id) {
+  const body = document.getElementById(`rbody-${id}`); if (!body) return;
+  try {
+    const run = await (await fetch(`${API}/api/runs/${id}/logs`)).json();
+    const jobCount = run.jobSnapshot?.length || 0;
+    const tabs = `<div class="run-tabs">
+      <button class="run-tab ${expandedRunTab==='logs'?'active':''}" onclick="switchRunTab('${id}','logs')">Logs (${run.logs?.length||0})</button>
+      <button class="run-tab ${expandedRunTab==='failures'?'active':''}" onclick="switchRunTab('${id}','failures')">Failures (${run.failureReasons?.length||0})</button>
+      <button class="run-tab ${expandedRunTab==='jobs'?'active':''}" onclick="switchRunTab('${id}','jobs')">Jobs (${jobCount})</button>
+    </div>`;
+    if (expandedRunTab === 'logs') {
+      const lines = (run.logs||[]).map(l => {
+        const cls = l.level==='error'?' err':l.level==='warn'?' warn':' ok';
+        return `<div class="log-line${cls}">[${(l.time||'').slice(11,19)}] ${esc(l.msg)}</div>`;
+      }).join('') || '<div class="log-line">No logs</div>';
+      body.innerHTML = tabs + `<div class="log-inner">${lines}</div>`;
+    } else if (expandedRunTab === 'failures') {
+      const fails = (run.failureReasons||[]).map(f =>
+        `<div class="failure-row"><strong>${esc(f.jobTitle)} @ ${esc(f.company)}</strong><span>${esc(f.reason)}</span></div>`
+      ).join('') || '<div style="padding:12px 16px;font-size:13px;color:var(--fg-muted)">No failures</div>';
+      body.innerHTML = tabs + `<div class="run-failures">${fails}</div>`;
+    } else {
+      const statusBadge = s => {
+        const map = { applied:'ok', skipped:'warn', failed:'err', already_applied:'muted' };
+        return `<span class="run-stat ${map[s]||''}" style="font-size:11px;padding:2px 6px">${esc(s)}</span>`;
+      };
+      const rows = (run.jobSnapshot||[]).map(j => `
+        <tr>
+          <td><a href="${esc(j.url||'#')}" target="_blank" style="color:var(--accent);text-decoration:none">${esc(j.title)}</a></td>
+          <td>${esc(j.company)}</td>
+          <td style="color:var(--fg-muted)">${esc(j.location||'—')}</td>
+          <td>${statusBadge(j.status)}</td>
+          ${j.error ? `<td style="color:var(--red);font-size:11px">${esc(j.error)}</td>` : '<td>—</td>'}
+        </tr>`).join('');
+      const table = rows ? `<div style="overflow-x:auto"><table class="source-perf-table" style="margin:0">
+        <thead><tr><th>Title</th><th>Company</th><th>Location</th><th>Status</th><th>Error</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>` : '<div style="padding:12px 16px;font-size:13px;color:var(--fg-muted)">No jobs in snapshot</div>';
+      body.innerHTML = tabs + table;
+    }
+  } catch { body.innerHTML = '<div class="empty" style="padding:20px">Failed to load</div>'; }
+}
+
+function switchRunTab(id, tab) { expandedRunTab = tab; loadRunDetail(id); }
+document.getElementById('refreshRunsBtn').addEventListener('click', loadRuns);
+
+// ── profile ────────────────────────────────────────────────
+let skills = [];
+
+async function loadProfile() {
+  try {
+    const p = await (await fetch(`${API}/api/profile`)).json();
+    document.getElementById('pf-first').value     = p.firstName || '';
+    document.getElementById('pf-last').value      = p.lastName  || '';
+    document.getElementById('pf-email').value     = p.email     || '';
+    document.getElementById('pf-phone').value     = p.phone     || '';
+    document.getElementById('pf-role').value      = p.currentRole || '';
+    document.getElementById('pf-exp').value       = p.yearsOfExperience || '';
+    document.getElementById('pf-linkedin').value  = p.linkedinUrl || '';
+    document.getElementById('pf-github').value    = p.githubUrl  || '';
+    document.getElementById('pf-portfolio').value = p.portfolioUrl || '';
+    document.getElementById('pf-summary').value   = p.summary   || '';
+    document.getElementById('pf-ctc-current').value = p.currentCTC  || '';
+    document.getElementById('pf-ctc-expected').value = p.expectedCTC || '';
+    document.getElementById('pf-auth').value      = p.workAuthorization || '';
+    const notice = document.getElementById('pf-notice');
+    if (p.noticePeriod) notice.value = p.noticePeriod;
+    const reloc = document.getElementById('pf-relocate');
+    if (p.willingToRelocate) reloc.value = p.willingToRelocate;
+    skills = p.skills || [];
+    renderSkillTags();
+    if (p.resumePath) showResumeUploaded('resume.pdf');
+  } catch {}
+}
+
+function renderSkillTags() {
+  document.getElementById('pf-skills-tags').innerHTML = skills.map((s,i) =>
+    `<span class="skill-tag">${esc(s)}<button onclick="removeSkill(${i})">×</button></span>`
+  ).join('');
+}
+function removeSkill(i) { skills.splice(i,1); renderSkillTags(); }
+
+document.getElementById('pf-skills-input').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ',') return;
+  e.preventDefault();
+  const val = e.target.value.trim();
+  if (val && !skills.includes(val)) { skills.push(val); renderSkillTags(); }
+  e.target.value = '';
+});
+
+document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+  const body = {
+    firstName:          document.getElementById('pf-first').value.trim(),
+    lastName:           document.getElementById('pf-last').value.trim(),
+    email:              document.getElementById('pf-email').value.trim(),
+    phone:              document.getElementById('pf-phone').value.trim(),
+    currentRole:        document.getElementById('pf-role').value.trim(),
+    yearsOfExperience:  Number(document.getElementById('pf-exp').value) || 0,
+    linkedinUrl:        document.getElementById('pf-linkedin').value.trim(),
+    githubUrl:          document.getElementById('pf-github').value.trim(),
+    portfolioUrl:       document.getElementById('pf-portfolio').value.trim(),
+    summary:            document.getElementById('pf-summary').value.trim(),
+    currentCTC:         document.getElementById('pf-ctc-current').value.trim(),
+    expectedCTC:        document.getElementById('pf-ctc-expected').value.trim(),
+    noticePeriod:       document.getElementById('pf-notice').value,
+    willingToRelocate:  document.getElementById('pf-relocate').value,
+    workAuthorization:  document.getElementById('pf-auth').value.trim(),
+    skills,
+  };
+  const res = await fetch(`${API}/api/profile`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  if (res.ok) {
+    const msg = document.getElementById('saveMsgProfile');
+    msg.hidden = false; setTimeout(() => msg.hidden = true, 2500);
+  }
+});
+
+// Resume upload
+function showResumeUploaded(name) {
+  document.getElementById('resumeStatusText').textContent = name + ' uploaded';
+  document.getElementById('resumeStatus').hidden = false;
+}
+
+async function uploadResume(file) {
+  const title = document.getElementById('resumeZoneTitle');
+  title.textContent = 'Uploading…';
+  const fd = new FormData(); fd.append('resume', file);
+  try {
+    const res = await fetch(`${API}/api/profile/resume`, { method:'POST', body:fd });
+    const data = await res.json();
+    if (!res.ok) { title.textContent = 'Upload Resume'; return; }
+    showResumeUploaded(file.name); title.textContent = 'Upload Resume';
+    if (data.extracted) showExtractedBanner(data.extracted);
+  } catch { title.textContent = 'Upload Resume'; }
+}
+
+function showExtractedBanner(ext) {
+  const wrap = document.getElementById('extractedBannerWrap');
+  const fields = ['firstName','lastName','email','phone','currentRole','linkedinUrl','githubUrl','summary'];
+  const filled = fields.filter(f => ext[f]);
+  wrap.innerHTML = `<div style="background:var(--green-bg);border:1px solid var(--green);border-radius:8px;padding:12px;margin-top:10px;font-size:12px">
+    <div style="font-weight:600;color:var(--green);margin-bottom:6px">✓ Extracted ${filled.length} fields from resume</div>
+    <div style="color:var(--fg-muted);margin-bottom:10px">${filled.map(f=>f.replace(/([A-Z])/g,' $1').trim()).join(' · ')}</div>
+    <button class="btn btn-primary btn-sm" id="applyExtractedBtn">Fill Profile Fields</button>
+  </div>`;
+  document.getElementById('applyExtractedBtn').addEventListener('click', () => {
+    const map = { 'pf-first':'firstName','pf-last':'lastName','pf-email':'email','pf-phone':'phone',
+      'pf-role':'currentRole','pf-linkedin':'linkedinUrl','pf-github':'githubUrl',
+      'pf-portfolio':'portfolioUrl','pf-summary':'summary','pf-exp':'yearsOfExperience' };
+    for (const [id, key] of Object.entries(map)) {
+      const el = document.getElementById(id); if (el && ext[key]) el.value = ext[key];
+    }
+    if (ext.skills?.length) { skills = [...new Set([...skills,...ext.skills])]; renderSkillTags(); }
+    wrap.innerHTML = '<div style="color:var(--green);font-size:12px;font-weight:600;margin-top:8px">✓ Profile filled — review and hit Save Profile</div>';
+  });
+}
+
+const resumeZone = document.getElementById('resumeZone');
+document.getElementById('resumeInput').addEventListener('change', async e => {
+  const file = e.target.files?.[0]; if (file) await uploadResume(file);
+});
+resumeZone.addEventListener('dragover', e => { e.preventDefault(); resumeZone.classList.add('drag'); });
+resumeZone.addEventListener('dragleave', () => resumeZone.classList.remove('drag'));
+resumeZone.addEventListener('drop', async e => {
+  e.preventDefault(); resumeZone.classList.remove('drag');
+  const file = e.dataTransfer?.files?.[0]; if (file) await uploadResume(file);
+});
+
+// ── boot ────────────────────────────────────────────────────
 checkAppLogin();
 </script>

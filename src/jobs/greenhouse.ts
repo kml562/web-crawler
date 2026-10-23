@@ -82,6 +82,7 @@ export class GreenhouseScraper extends BaseScraper {
         if (uploadEl) await uploadEl.setInputFiles(profile.resumePath);
       }
 
+      await this.fillScreeningQuestions();
       await delay(800, 1500);
       const submitBtn = await this.page.$('input[type="submit"], button[type="submit"]');
       if (submitBtn) {

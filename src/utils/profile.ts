@@ -7,33 +7,45 @@ const PROFILE_FILE = path.resolve("data/profile.json");
 const RESUME_PATH  = path.resolve("data/resume.pdf");
 
 export interface UserProfile {
-  firstName:         string;
-  lastName:          string;
-  email:             string;
-  phone:             string;
-  linkedinUrl:       string;
-  portfolioUrl:      string;
-  githubUrl:         string;
-  currentRole:       string;
-  yearsOfExperience: number;
-  skills:            string[];
-  summary:           string;
-  resumePath:        string;
+  firstName:          string;
+  lastName:           string;
+  email:              string;
+  phone:              string;
+  linkedinUrl:        string;
+  portfolioUrl:       string;
+  githubUrl:          string;
+  currentRole:        string;
+  yearsOfExperience:  number;
+  skills:             string[];
+  summary:            string;
+  resumePath:         string;
+  noticePeriod:       string;
+  currentCTC:         string;
+  expectedCTC:        string;
+  willingToRelocate:  string;
+  workAuthorization:  string;
+  preferredLocations: string[];
 }
 
 const DEFAULTS: UserProfile = {
-  firstName:         "",
-  lastName:          "",
-  email:             "",
-  phone:             "",
-  linkedinUrl:       "",
-  portfolioUrl:      "",
-  githubUrl:         "",
-  currentRole:       "Software Engineer",
-  yearsOfExperience: 0,
-  skills:            [],
-  summary:           "",
-  resumePath:        RESUME_PATH,
+  firstName:          "",
+  lastName:           "",
+  email:              "",
+  phone:              "",
+  linkedinUrl:        "",
+  portfolioUrl:       "",
+  githubUrl:          "",
+  currentRole:        "Software Engineer",
+  yearsOfExperience:  0,
+  skills:             [],
+  summary:            "",
+  resumePath:         RESUME_PATH,
+  noticePeriod:       "30 days",
+  currentCTC:         "",
+  expectedCTC:        "",
+  willingToRelocate:  "Yes",
+  workAuthorization:  "Indian Citizen",
+  preferredLocations: ["Bengaluru", "Remote"],
 };
 
 export function loadProfile(): UserProfile {

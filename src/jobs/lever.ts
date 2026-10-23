@@ -81,6 +81,7 @@ export class LeverScraper extends BaseScraper {
         if (uploadEl) await uploadEl.setInputFiles(profile.resumePath);
       }
 
+      await this.fillScreeningQuestions();
       await delay(800, 1500);
       const submitBtn = await this.page.$('button[type="submit"]');
       if (submitBtn) {

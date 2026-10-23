@@ -14,10 +14,13 @@ import { WeWorkRemotelyScraper } from "./jobs/weworkremotely.js";
 import { GreenhouseScraper } from "./jobs/greenhouse.js";
 import { LeverScraper } from "./jobs/lever.js";
 import { NaukriScraper } from "./jobs/naukri.js";
+
 import { appendResult, loadApplied } from "./tracker/storage.js";
+import { listCareerPages, countCareerPages } from "./tracker/careerPages.js";
 import { connectDB } from "./db/connect.js";
+import { CrawlRun } from "./db/models/CrawlRun.js";
 import type { BaseScraper } from "./crawler/base.js";
-import { getAuthStatus, loginWithBrowser, disconnect } from "./auth/loginManager.js";
+import { getAuthStatus, loginWithBrowser, disconnect, isConnected } from "./auth/loginManager.js";
 import type { AuthSource } from "./auth/loginManager.js";
 import { loadProfile, saveProfile, RESUME_PATH } from "./utils/profile.js";
 import { extractProfileFromPDF } from "./utils/resumeParser.js";
@@ -127,7 +130,7 @@ app.get("/api/events", (req, res) => {
 
 // ── start crawl ──────────────────────────────────────────
 app.post("/api/crawl", (req, res) => {
-  const { site, autoApply } = req.body as { site: string; autoApply: boolean };
+  const { site, autoApply, showBrowser } = req.body as { site: string; autoApply: boolean; showBrowser?: boolean };
 
   const source = detectSource(site ?? "");
   if (!source) {
@@ -146,48 +149,127 @@ app.post("/api/crawl", (req, res) => {
   broadcast("status", { running: true, source });
 
   (async () => {
+    const runStart = Date.now();
+    const run = await CrawlRun.create({
+      source, startedAt: new Date().toISOString(),
+      autoApply: typeof autoApply === "boolean" ? autoApply : false,
+      status: "running",
+    });
+
+    const addLog = (level: "info" | "warn" | "error", msg: string) => {
+      run.logs.push({ time: new Date().toISOString(), level, msg });
+      broadcast("log", { msg });
+    };
+
+    const addFailure = (jobTitle: string, company: string, reason: string, url: string) => {
+      run.failureReasons.push({ jobTitle, company, reason, url });
+      addLog("warn", `⚠ Skipped "${jobTitle}" @ ${company} — ${reason}`);
+    };
+
     try {
       const cfg = loadJobsConfig();
       if (typeof autoApply === "boolean") cfg.autoApply = autoApply;
+      if (typeof showBrowser === "boolean") cfg.showBrowser = showBrowser;
 
       const scraper = scraperForSource(source, cfg);
       if (!scraper) throw new Error(`No scraper for ${source}`);
 
-      broadcast("log", { msg: `Starting ${source} crawler…` });
+      // Route all scraper-internal logs to SSE so they appear in the UI
+      scraper.setLogCallback((msg) => addLog("info", msg));
+
+      // Guard: sources that need a browser login must be connected first
+      const noLoginNeeded = ["greenhouse", "lever", "weworkremotely"];
+      if (!noLoginNeeded.includes(source) && !isConnected(source)) {
+        throw new Error(`${source} is not connected. Go to the Profile tab → Accounts and click "Connect" next to ${source} first.`);
+      }
+
+      addLog("info", `Starting ${source} crawler…`);
       await scraper.init();
 
-      broadcast("log", { msg: "Fetching job listings…" });
+      addLog("info", "Fetching job listings…");
       const jobs = await scraper.fetchListings();
-      broadcast("log", { msg: `Found ${jobs.length} jobs` });
+
+      // Extraction stats
+      run.jobsRaw      = jobs.length;   // already filtered in scraper, still useful
+      run.jobsFiltered = jobs.length;
+      run.totalFound   = jobs.length;
+      run.pagesVisited = scraper.pagesVisited || Math.max(1, Math.ceil(jobs.length / 10));
+
+      addLog("info", `Found ${jobs.length} jobs (pages visited: ${run.pagesVisited})`);
       broadcast("jobs", { count: jobs.length });
 
       let applied = 0;
       for (const job of jobs) {
-        if (applied >= cfg.maxApplicationsPerRun) break;
+        if (applied >= cfg.maxApplicationsPerRun) {
+          addLog("info", `Reached max applications limit (${cfg.maxApplicationsPerRun})`);
+          break;
+        }
+
+        let resultStatus: string = "skipped";
+        let resultError: string | undefined;
+
         if (cfg.autoApply) {
-          broadcast("log", { msg: `Applying: ${job.title} @ ${job.company}` });
+          addLog("info", `Applying: ${job.title} @ ${job.company}`);
           const result = await scraper.applyToJob(job);
           await appendResult(result);
-          if (result.status === "applied") applied++;
-          broadcast("progress", { job: job.title, company: job.company, status: result.status });
+          resultStatus = result.status;
+          resultError  = result.error;
+
+          if (result.status === "applied") {
+            applied++; run.applied++;
+            addLog("info", `✓ Applied: ${job.title} @ ${job.company}`);
+          } else if (result.status === "skipped") {
+            run.skipped++;
+            addFailure(job.title, job.company, result.error ?? "No easy-apply / external ATS", job.url);
+          } else if (result.status === "failed") {
+            run.failed++;
+            addFailure(job.title, job.company, result.error ?? "Unknown error", job.url);
+            addLog("error", `✗ Failed: ${job.title} — ${result.error ?? "unknown"}`);
+          } else if (result.status === "already_applied") {
+            run.alreadyApplied++;
+            addLog("info", `Already applied: ${job.title}`);
+          }
+          broadcast("progress", { job: job.title, company: job.company, status: result.status, error: result.error });
         } else {
           await appendResult({ job, status: "skipped" });
+          run.skipped++;
           broadcast("progress", { job: job.title, company: job.company, status: "skipped" });
         }
+
+        // Snapshot every job for the detail view
+        run.jobSnapshot.push({
+          title:    job.title,
+          company:  job.company,
+          location: job.location,
+          url:      job.url,
+          status:   resultStatus,
+          ...(resultError ? { error: resultError } : {}),
+        });
       }
 
       await scraper.close();
       await closeBrowser();
 
+      run.status    = "done";
+      run.finishedAt = new Date().toISOString();
+      run.durationMs = Date.now() - runStart;
+      await run.save();
+
       const stats = buildStats(await loadApplied());
       broadcast("done", { applied, total: jobs.length, stats });
-      broadcast("log", { msg: `Done! Applied: ${applied} / ${jobs.length}` });
+      addLog("info", `Done in ${(run.durationMs / 1000).toFixed(1)}s — Applied: ${applied}/${jobs.length} | Skipped: ${run.skipped} | Failed: ${run.failed}`);
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+      run.status = "error";
+      run.errorMessage = msg;
+      run.finishedAt = new Date().toISOString();
+      run.durationMs = Date.now() - runStart;
+      await run.save();
       broadcast("error", { msg });
-      broadcast("log", { msg: `Error: ${msg}` });
+      addLog("error", `Fatal error: ${msg}`);
     } finally {
+      await run.save().catch(() => {});
       crawlRunning = false;
       broadcast("status", { running: false });
     }
@@ -213,6 +295,82 @@ app.get("/api/stats", async (_req, res) => {
 
 app.get("/api/crawl/status", (_req, res) => {
   res.json({ running: crawlRunning });
+});
+
+// ── naukri performance ───────────────────────────────────
+let naukriPerfCache: { data: Record<string, unknown>; ts: number } | null = null;
+
+app.get("/api/naukri/performance", async (_req, res) => {
+  // Cache 15 min to avoid hammering Naukri
+  if (naukriPerfCache && Date.now() - naukriPerfCache.ts < 15 * 60 * 1000) {
+    res.json(naukriPerfCache.data); return;
+  }
+  try {
+    const cfg = loadJobsConfig();
+    const scraper = new NaukriScraper(cfg);
+    (scraper as unknown as { loadSession: () => void })["loadSession"]?.();
+    // call private method via cast
+    const data = await (scraper as unknown as { fetchPerformanceStats: () => Promise<Record<string, unknown>> }).fetchPerformanceStats();
+    naukriPerfCache = { data, ts: Date.now() };
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : "Failed" });
+  }
+});
+
+// ── crawl run history ─────────────────────────────────────
+app.get("/api/career-pages", (_req, res) => {
+  res.json({ count: countCareerPages(), pages: listCareerPages() });
+});
+
+app.get("/api/runs", async (_req, res) => {
+  const runs = await CrawlRun.find().sort({ createdAt: -1 }).limit(20).select("-logs");
+  res.json(runs);
+});
+
+app.get("/api/runs/:id/logs", async (req, res) => {
+  const run = await CrawlRun.findById(req.params["id"]).select("logs failureReasons jobSnapshot source startedAt status");
+  if (!run) { res.status(404).json({ error: "Run not found" }); return; }
+  res.json(run);
+});
+
+app.get("/api/runs/:id/jobs", async (req, res) => {
+  const run = await CrawlRun.findById(req.params["id"]).select("jobSnapshot source startedAt totalFound");
+  if (!run) { res.status(404).json({ error: "Run not found" }); return; }
+  res.json({ jobs: run.jobSnapshot, source: run.source, startedAt: run.startedAt, totalFound: run.totalFound });
+});
+
+// ── analytics aggregation ──────────────────────────────────
+app.get("/api/analytics", async (_req, res) => {
+  const runs = await CrawlRun.find({ status: "done" })
+    .sort({ createdAt: -1 }).limit(50)
+    .select("source startedAt totalFound jobsRaw pagesVisited applied skipped failed alreadyApplied durationMs");
+
+  // per-source aggregation
+  const bySource: Record<string, { runs: number; totalFound: number; applied: number; skipped: number; failed: number; pagesVisited: number; totalDuration: number }> = {};
+  for (const r of runs) {
+    const s = r.source;
+    if (!bySource[s]) bySource[s] = { runs:0, totalFound:0, applied:0, skipped:0, failed:0, pagesVisited:0, totalDuration:0 };
+    bySource[s].runs++;
+    bySource[s].totalFound   += r.totalFound   || 0;
+    bySource[s].applied      += r.applied      || 0;
+    bySource[s].skipped      += r.skipped      || 0;
+    bySource[s].failed       += r.failed       || 0;
+    bySource[s].pagesVisited += r.pagesVisited || 0;
+    bySource[s].totalDuration += r.durationMs  || 0;
+  }
+
+  // recent run trend (last 10)
+  const trend = runs.slice(0, 10).reverse().map(r => ({
+    source: r.source,
+    date:   (r.startedAt || "").slice(0, 10),
+    found:  r.totalFound || 0,
+    applied: r.applied   || 0,
+    pages:  r.pagesVisited || 0,
+    durationSec: Math.round((r.durationMs || 0) / 1000),
+  }));
+
+  res.json({ bySource, trend, totalRuns: runs.length });
 });
 
 // ── auth ─────────────────────────────────────────────────

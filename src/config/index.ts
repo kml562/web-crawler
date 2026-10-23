@@ -18,5 +18,6 @@ export function loadJobsConfig(): JobsConfig {
   if (!fs.existsSync(configPath)) {
     throw new Error("jobs.config.json not found. Copy jobs.config.json and fill in your details.");
   }
-  return JSON.parse(fs.readFileSync(configPath, "utf-8")) as JobsConfig;
+  const parsed = JSON.parse(fs.readFileSync(configPath, "utf-8")) as Partial<JobsConfig>;
+  return { showBrowser: false, ...parsed } as JobsConfig;
 }

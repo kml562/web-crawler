@@ -11,6 +11,12 @@ export interface Job {
   tags?: string[];
   easyApply: boolean;
   foundAt: string;
+  // source-specific raw IDs for direct API apply
+  naukriJobId?: string;
+  mandatorySkills?: string[];
+  optionalSkills?: string[];
+  // company career page — populated when discoverable, used for direct company-site apply later
+  companyCareerUrl?: string;
 }
 
 export interface ApplicationResult {
@@ -54,6 +60,7 @@ export interface JobsConfig {
     weworkremotely: boolean;
   };
   autoApply: boolean;
+  showBrowser: boolean;
   maxApplicationsPerRun: number;
 }
 
