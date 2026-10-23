@@ -1333,16 +1333,31 @@ document.getElementById('learnStartBtn').addEventListener('click', async () => {
 
 document.getElementById('learnStopBtn').addEventListener('click', async () => {
   clearInterval(window._learnPoll);
+  window._learnPoll = null;
   const btn = document.getElementById('learnStopBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
     const res = await fetch(`${API}/api/naukri/learn/stop`, { method: 'POST' });
     const data = await res.json();
-    if (!res.ok) { alert(data.error); btn.disabled = false; btn.textContent = '⏹ Stop & Save'; return; }
+    if (!res.ok) {
+      alert(data.error || 'Stop failed');
+      btn.disabled = false; btn.textContent = '⏹ Stop & Save';
+      return;
+    }
+    // Force buttons to idle state immediately, then refresh full status
+    document.getElementById('learnStartBtn').style.display = '';
+    document.getElementById('learnStartBtn').disabled = false;
+    document.getElementById('learnStartBtn').textContent = '▶ Start Recording';
+    document.getElementById('learnStopBtn').style.display = 'none';
+    document.getElementById('learnLog').style.display = 'none';
     document.getElementById('learnStatus').innerHTML =
-      `<span style="color:var(--accent)">✅ Saved ${data.steps} steps. Auto-apply will now use your recorded flow.</span>`;
-    loadLearnStatus();
-  } catch { btn.disabled = false; btn.textContent = '⏹ Stop & Save'; }
+      `<span style="color:var(--accent)">✅ Saved ${data.steps} steps. Auto-apply will now replay your flow.</span>`;
+    // Small delay to let the server write the file, then reload status
+    setTimeout(loadLearnStatus, 500);
+  } catch (e) {
+    btn.disabled = false; btn.textContent = '⏹ Stop & Save';
+    alert('Could not reach server: ' + e);
+  }
 });
 
 document.getElementById('learnDeleteBtn').addEventListener('click', async () => {

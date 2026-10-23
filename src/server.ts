@@ -369,13 +369,15 @@ app.post("/api/naukri/learn/start", async (_req, res) => {
 });
 
 app.post("/api/naukri/learn/stop", async (_req, res) => {
-  if (!recorder?.isRunning()) {
+  // Accept stop even if browser was already closed by the user (isRunning() = false but recorder exists)
+  if (!recorder) {
     res.status(400).json({ error: "No recording in progress" });
     return;
   }
+  const current = recorder;
+  recorder = null;
   try {
-    const flow = await recorder.stop();
-    recorder = null;
+    const flow = await current.stop();
     broadcast("learn_done", { steps: flow.steps.length, savedAt: flow.recordedAt });
     res.json({ ok: true, steps: flow.steps.length, savedAt: flow.recordedAt });
   } catch (err) {
@@ -386,7 +388,8 @@ app.post("/api/naukri/learn/stop", async (_req, res) => {
 app.get("/api/naukri/learn/status", (_req, res) => {
   const flow = loadFlow();
   res.json({
-    recording: recorder?.isRunning() ?? false,
+    // recorder exists means a session is active (even if browser was closed)
+    recording: recorder !== null,
     steps:     recorder?.getSteps().length ?? 0,
     liveLog:   learnSteps.slice(-50),
     savedFlow: flow
