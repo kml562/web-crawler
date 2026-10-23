@@ -1102,8 +1102,10 @@ async function disconnectSource(src) {
 function connectNaukri() { connectSource('naukri'); }
 
 async function loadNaukriStats() {
+  // career pages always load regardless of auth status
+  loadCareerPages();
   try {
-    const [authRes] = await Promise.all([fetch(`${API}/api/auth/status`)]);
+    const authRes = await fetch(`${API}/api/auth/status`);
     const authStatus = await authRes.json();
     const naukriConnected = authStatus?.naukri?.connected;
 
@@ -1118,8 +1120,7 @@ async function loadNaukriStats() {
     const perfRes = await fetch(`${API}/api/naukri/performance`);
     const perf = await perfRes.json();
 
-    // Try to read common Naukri performance API fields
-    const views   = perf?.profileViews ?? perf?.totalViews ?? perf?.data?.profileViews ?? '—';
+    const views    = perf?.profileViews ?? perf?.totalViews ?? perf?.data?.profileViews ?? '—';
     const searches = perf?.searchAppearances ?? perf?.totalSearchAppearances ?? perf?.data?.searchAppearances ?? '—';
     const inmails  = perf?.inMails ?? perf?.totalInMails ?? perf?.data?.inMails ?? '—';
     const applied  = perf?.applied ?? perf?.totalApplied ?? perf?.data?.applied ?? '—';
@@ -1142,8 +1143,6 @@ async function loadNaukriStats() {
   } catch (err) {
     console.error('Naukri stats:', err);
   }
-  // always load career pages regardless of auth status
-  loadCareerPages();
 }
 
 async function loadCareerPages() {
