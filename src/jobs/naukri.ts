@@ -5,6 +5,7 @@ import { hasApplied } from "../tracker/storage.js";
 import { loadProfile } from "../utils/profile.js";
 import { cookiePath } from "../auth/loginManager.js";
 import { upsertCareerPage } from "../tracker/careerPages.js";
+import { hasRecordedFlow, replayFlow } from "./naukriReplayer.js";
 import { chromium } from "playwright";
 import axios from "axios";
 import crypto from "crypto";
@@ -168,7 +169,7 @@ export class NaukriScraper extends BaseScraper {
     const experience = profile.yearsOfExperience || 5;
 
     // Primary keyword for SEO slug + ?k= param (use first keyword or default)
-    const primaryKw = keywords[0] ?? "node js developer, node.js";
+    const primaryKw = keywords[0] ?? "backend developer, node.js";
     // Build the SEO slug: "node js developer" → "node-js-developer-jobs"
     const seoSlug = primaryKw
       .toLowerCase()
@@ -586,23 +587,37 @@ export class NaukriScraper extends BaseScraper {
 
   // ── Browser apply (Playwright) ───────────────────────────
   private async applyViaBrowser(job: Job): Promise<ApplicationResult> {
+    // If the user has recorded a flow, replay it first
+    if (hasRecordedFlow()) {
+      this.log(`Replaying recorded flow for: ${job.title} @ ${job.company}`);
+      const result = await replayFlow(this.page, job.url, (msg) => this.log(msg));
+      if (result === "applied")  return { job, status: "applied", appliedAt: new Date().toISOString() };
+      if (result === "skipped")  return { job, status: "already_applied" };
+      this.log("Replay failed — falling back to selector-based apply");
+    }
+
     try {
       this.log(`Browser apply → ${job.url}`);
       await this.page.goto(job.url, { waitUntil: "domcontentloaded", timeout: 30000 });
-      await delay(2000, 3000);
+      await delay(2500, 3500);
       this.pagesVisited++;
 
       const landedUrl = this.page.url();
       this.log(`Page loaded: ${landedUrl}`);
 
-      // Immediately check for external ATS redirect
       if (this.isExternalATS()) {
         return { job, status: "skipped", error: `External ATS: ${landedUrl}` };
       }
 
-      // Skip if "Apply on company website" present
+      // Check "already applied" before doing anything
+      const initialText = await this.page.$eval("body", (b) => b.innerText).catch(() => "");
+      if (/already applied/i.test(initialText)) {
+        return { job, status: "already_applied" };
+      }
+
+      // Skip external company-site apply buttons
       const externalApply = await this.page.$('a:has-text("Apply on company website"), button:has-text("Apply on Company Website"), a[class*="company-site"]');
-      if (externalApply) {
+      if (externalApply && await externalApply.isVisible().catch(() => false)) {
         return { job, status: "skipped", error: "Apply on company website only" };
       }
 
@@ -628,7 +643,6 @@ export class NaukriScraper extends BaseScraper {
       }
 
       if (!applyBtn) {
-        // Debug: log all visible buttons so we can improve selectors
         const visibleBtns = await this.page.$$eval(
           "button:not([hidden]), a[class*='btn']:not([hidden])",
           (els) => els.slice(0, 15).map((e) => `${e.tagName}#${(e as HTMLElement).id || ""} "${e.textContent?.trim().slice(0, 40)}"`)
@@ -639,30 +653,40 @@ export class NaukriScraper extends BaseScraper {
 
       this.log(`Clicking apply button (${usedSel})`);
       await applyBtn.click();
-      await delay(2000, 3000);
 
-      // ── Handle Naukri quick-apply modal ─────────────────
-      // After clicking, Naukri opens a modal/overlay with screening questions
+      // ── Wait for modal/chatbot to actually appear ────────
       const modalSels = [
         'div[class*="apply-popup"]',
         'div[class*="quickApply"]',
         'div[class*="applyModal"]',
+        'div[class*="chatbot"]',
         'div[class*="modal"][class*="apply"]',
         'div[role="dialog"]',
         '.chatbot-container',
-        'div[class*="overlay"]',
+        'div[class*="overlay"][class*="apply"]',
       ];
-      for (const sel of modalSels) {
-        const modal = await this.page.$(sel).catch(() => null);
-        if (modal && await modal.isVisible().catch(() => false)) {
-          this.log(`Modal opened: ${sel}`);
-          break;
-        }
+
+      let modalFound = false;
+      // Race: first modal to become visible wins, timeout after 8s
+      await Promise.race([
+        ...modalSels.map((sel) =>
+          this.page.waitForSelector(sel, { state: "visible", timeout: 8000 }).then(() => {
+            modalFound = true;
+          }).catch(() => {})
+        ),
+        delay(8000, 8000),
+      ]);
+
+      if (modalFound) {
+        this.log("Modal/chatbot opened — filling screening questions");
+      } else {
+        this.log("No modal detected — applying directly");
+        await delay(1500, 2000);
       }
 
-      // Fill any screening questions in the modal
+      // Fill any visible screening inputs
       await this.fillScreeningQuestions();
-      await delay(800, 1200);
+      await delay(1000, 1500);
 
       // ── Find and click the final Submit/Apply button ─────
       const submitSelectors = [
@@ -679,30 +703,25 @@ export class NaukriScraper extends BaseScraper {
           if (btn && await btn.isVisible()) {
             this.log(`Clicking submit: ${sel}`);
             await btn.click();
-            await delay(2000, 3000);
+            await delay(2500, 3500);
             break;
           }
-        } catch { /* skip invalid selectors */ }
+        } catch { /* skip */ }
       }
 
-      // Check for external ATS after clicking (some jobs redirect mid-flow)
       if (this.isExternalATS()) {
-        return { job, status: "skipped", error: `Redirected to external ATS after apply` };
+        return { job, status: "skipped", error: "Redirected to external ATS after apply" };
       }
 
-      // ── Detect success ────────────────────────────────────
-      const afterUrl    = this.page.url();
-      const urlChanged  = afterUrl !== landedUrl;
-      const successText = await this.page.$eval(
-        "body",
-        (b) => b.innerText
-      ).then((t) => /applied successfully|application submitted|you.ve applied|already applied/i.test(t)).catch(() => false);
-
-      if (/already applied/i.test(await this.page.$eval("body", (b) => b.innerText).catch(() => ""))) {
+      // ── Detect success / already applied ─────────────────
+      const afterText = await this.page.$eval("body", (b) => b.innerText).catch(() => "");
+      if (/already applied/i.test(afterText)) {
         return { job, status: "already_applied" };
       }
 
-      this.log(`After apply — URL: ${afterUrl} | success text: ${successText} | url changed: ${urlChanged}`);
+      const afterUrl   = this.page.url();
+      const didSucceed = /applied successfully|application submitted|you.ve applied/i.test(afterText);
+      this.log(`After apply — URL: ${afterUrl} | success: ${didSucceed}`);
       this.log(`✓ Applied via browser: ${job.title} @ ${job.company}`);
       return { job, status: "applied", appliedAt: new Date().toISOString() };
 

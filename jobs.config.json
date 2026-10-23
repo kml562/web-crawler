@@ -1,14 +1,14 @@
 {
   "search": {
-    "keywords": ["Node.js Backend Engineer", "NestJS Developer", "Backend Engineer Node", "SDE Node.js", "Software Engineer Node.js"],
+    "keywords": ["Node.js developer", "backend developer"],
     "location": "India",
     "remote": true,
     "maxResults": 50,
     "blacklistCompanies": [],
-    "requiredKeywords": ["node"],
+    "requiredKeywords": [],
     "excludeKeywords": [
       "staff", "principal", "manager", "director", "intern", "junior", "fresher",
-      "java ", "spring boot", ".net", "golang", "ruby on rails", "php developer",
+      "java ", "spring boot",
       "android", "ios", "flutter", "react native", "data engineer", "data scientist",
       "machine learning", "devops engineer", "frontend only", "angular developer",
       "vue developer", "qa engineer", "test engineer", "salesforce", "sap"
@@ -22,7 +22,7 @@
     "phone": "",
     "linkedinUrl": "",
     "portfolioUrl": "",
-    "yearsOfExperience": 2
+    "yearsOfExperience": 5
   },
   "sources": {
     "linkedin": true,
@@ -34,5 +34,6 @@
     "weworkremotely": true
   },
   "autoApply": false,
+  "showBrowser": false,
   "maxApplicationsPerRun": 20
 }

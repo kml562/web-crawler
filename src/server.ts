@@ -17,6 +17,8 @@ import { NaukriScraper } from "./jobs/naukri.js";
 
 import { appendResult, loadApplied } from "./tracker/storage.js";
 import { listCareerPages, countCareerPages } from "./tracker/careerPages.js";
+import { NaukriRecorder, FLOW_PATH } from "./jobs/naukriRecorder.js";
+import { loadFlow } from "./jobs/naukriReplayer.js";
 import { connectDB } from "./db/connect.js";
 import { CrawlRun } from "./db/models/CrawlRun.js";
 import { SystemLog } from "./db/models/SystemLog.js";
@@ -333,6 +335,73 @@ app.get("/api/naukri/performance", async (_req, res) => {
 // ── crawl run history ─────────────────────────────────────
 app.get("/api/career-pages", (_req, res) => {
   res.json({ count: countCareerPages(), pages: listCareerPages() });
+});
+
+// ── Naukri Learn Mode ────────────────────────────────────
+let recorder: NaukriRecorder | null = null;
+const learnSteps: string[] = [];
+
+app.post("/api/naukri/learn/start", async (_req, res) => {
+  if (recorder?.isRunning()) {
+    res.status(409).json({ error: "Recording already in progress" });
+    return;
+  }
+  learnSteps.length = 0;
+  recorder = new NaukriRecorder();
+  recorder.setStepCallback((step) => {
+    const desc = step.type === "click"    ? `Click "${step.text}"`
+               : step.type === "fill"     ? `Fill "${step.label}" = "${step.value.slice(0, 20)}"`
+               : step.type === "navigate" ? `Navigate → ${step.url.slice(0, 60)}`
+               : step.type === "select"   ? `Select "${step.label}" = "${step.value}"`
+               : `Wait ${step.ms}ms`;
+    learnSteps.push(desc);
+    broadcast("learn_step", { step: desc, total: learnSteps.length });
+    logger.info(`[Learn] ${desc}`, { service: "recorder" });
+  });
+
+  try {
+    await recorder.start("https://www.naukri.com");
+    res.json({ ok: true, message: "Browser opened — do your apply flow now, then click Stop" });
+  } catch (err) {
+    recorder = null;
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+app.post("/api/naukri/learn/stop", async (_req, res) => {
+  if (!recorder?.isRunning()) {
+    res.status(400).json({ error: "No recording in progress" });
+    return;
+  }
+  try {
+    const flow = await recorder.stop();
+    recorder = null;
+    broadcast("learn_done", { steps: flow.steps.length, savedAt: flow.recordedAt });
+    res.json({ ok: true, steps: flow.steps.length, savedAt: flow.recordedAt });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+app.get("/api/naukri/learn/status", (_req, res) => {
+  const flow = loadFlow();
+  res.json({
+    recording: recorder?.isRunning() ?? false,
+    steps:     recorder?.getSteps().length ?? 0,
+    liveLog:   learnSteps.slice(-50),
+    savedFlow: flow
+      ? { recordedAt: flow.recordedAt, stepCount: flow.steps.length, notes: flow.notes }
+      : null,
+  });
+});
+
+app.delete("/api/naukri/learn/flow", (_req, res) => {
+  try {
+    if (fs.existsSync(FLOW_PATH)) fs.unlinkSync(FLOW_PATH);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
 });
 
 app.get("/api/logs", async (req, res) => {
