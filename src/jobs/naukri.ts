@@ -11,7 +11,6 @@ import crypto from "crypto";
 import fs from "fs";
 
 const RECOM_API   = "https://www.naukri.com/jobapi/v2/search/recom-jobs";
-const SEARCH_API  = "https://www.naukri.com/jobapi/v3/search";
 const APPLY_API  = "https://www.naukri.com/cloudgateway-workflow/workflow-services/apply-workflow/v1/apply";
 const CHATBOT_API = "https://www.naukri.com/cloudgateway-chatbot/chatbot-services/botapi/v5/respond";
 const BASE_URL   = "https://www.naukri.com";
@@ -151,21 +150,6 @@ export class NaukriScraper extends BaseScraper {
     };
   }
 
-  private searchHeaders(referer: string) {
-    return {
-      "accept":          "application/json",
-      "appid":           "109",
-      "clientid":        "d3skt0p",
-      "systemid":        "Naukri",
-      "gid":             "LOCATION,INDUSTRY,EDUCATION,FAREA_ROLE",
-      "authorization":   `Bearer ${this.accessToken}`,
-      "referer":         referer,
-      "origin":          BASE_URL,
-      "cookie":          this.cookieHeader,
-      "user-agent":      UA,
-    };
-  }
-
   private chatbotHeaders() {
     return {
       "accept":        "application/json",
@@ -180,49 +164,118 @@ export class NaukriScraper extends BaseScraper {
 
   async fetchListings(): Promise<Job[]> {
     const { keywords, maxResults } = this.cfg.search;
-    const profile = loadProfile();
+    const profile   = loadProfile();
     const experience = profile.yearsOfExperience || 5;
 
-    const kwString = keywords.length > 0
-      ? keywords.join(", ")
-      : "node.js, node js developer, node, nestjs, typescript";
+    // Primary keyword for SEO slug + ?k= param (use first keyword or default)
+    const primaryKw = keywords[0] ?? "node js developer, node.js";
+    // Build the SEO slug: "node js developer" → "node-js-developer-jobs"
+    const seoSlug = primaryKw
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "")
+      .trim()
+      .replace(/\s+/g, "-") + "-jobs";
 
-    const seoKey = "node-dot-js-node-js-developer-node-nestjs-typescript-jobs";
-    const referer = `${BASE_URL}/${seoKey}?k=${encodeURIComponent(kwString)}&experience=${experience}`;
+    const kParam  = encodeURIComponent(primaryKw);
+    const expParam = `experience=${experience}`;
+
     const allRaw: NaukriJob[] = [];
     const PAGE_SIZE = 20;
 
-    // Paginate until we have maxResults jobs or run out of pages
-    for (let page = 1; allRaw.length < maxResults; page++) {
-      const url = `${SEARCH_API}?noOfResults=${PAGE_SIZE}&urlType=search_by_keyword&searchType=adv` +
-        `&keyword=${encodeURIComponent(kwString)}&pageNo=${page}&experience=${experience}` +
-        `&k=${encodeURIComponent(kwString)}&src=jobsearchDesk`;
+    for (let pageNo = 1; allRaw.length < maxResults; pageNo++) {
+      // Naukri URL pattern: /slug?k=...   for page 1
+      //                     /slug-2?k=... for page 2, etc.
+      const pageSuffix = pageNo === 1 ? "" : `-${pageNo}`;
+      const pageUrl = `${BASE_URL}/${seoSlug}${pageSuffix}?k=${kParam}&${expParam}&nignbevent_src=jobsearchDeskGNB`;
 
-      this.log(`Fetching page ${page}… (${allRaw.length}/${maxResults} so far)`);
-      try {
-        const res = await axios.get<RecomResponse>(url, {
-          headers: this.searchHeaders(referer), timeout: 15000,
+      this.log(`Navigating to search page ${pageNo}… (${allRaw.length}/${maxResults} so far)`);
+      this.log(`URL: ${pageUrl}`);
+
+      let intercepted: NaukriJob[] | null = null;
+
+      // Intercept /jobapi/v3/search response the page fires naturally —
+      // the browser session handles all auth cookies automatically.
+      const apiCapture = new Promise<void>((resolve) => {
+        this.page.on("response", async function handler(response) {
+          if (!response.url().includes("/jobapi/v3/search")) return;
+          try {
+            const json = await response.json() as RecomResponse;
+            intercepted = json.jobDetails ?? [];
+          } catch { intercepted = []; }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (response.frame().page() as any).off("response", handler);
+          resolve();
         });
-        const batch = res.data.jobDetails ?? [];
-        this.log(`Page ${page}: ${batch.length} jobs`);
-        allRaw.push(...batch);
-        if (batch.length < PAGE_SIZE) break; // no more pages
-        await delay(800, 1500);
+      });
+
+      try {
+        await this.page.goto(pageUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       } catch (err) {
-        this.log(`Search API failed on page ${page}, falling back to recommended jobs`);
-        if (page === 1) return this.fetchRecommended(maxResults);
+        this.log(`Navigation error on page ${pageNo}: ${err instanceof Error ? err.message : String(err)}`);
         break;
       }
+
+      // Wait up to 8s for the API call to complete after page load
+      await Promise.race([
+        apiCapture,
+        new Promise<void>((resolve) => setTimeout(resolve, 8000)),
+      ]);
+
+      // If intercept didn't fire, scrape job cards from the DOM as fallback
+      if (!intercepted) {
+        this.log(`API intercept missed on page ${pageNo}, falling back to DOM scrape`);
+        intercepted = await this.scrapePageDOM();
+      }
+
+      const batch = intercepted ?? [];
+      this.log(`Page ${pageNo}: ${batch.length} jobs found`);
+
+      if (batch.length === 0 && pageNo === 1) {
+        this.log("No jobs captured on page 1 — falling back to recommended jobs API");
+        return this.fetchRecommended(maxResults);
+      }
+      if (batch.length === 0) break;
+      allRaw.push(...batch);
+      if (batch.length < PAGE_SIZE) break; // Naukri ran out of results
+      await delay(1500, 2500);
     }
 
-    this.log(`Search API total: ${allRaw.length} jobs across ${Math.ceil(allRaw.length / PAGE_SIZE)} pages`);
+    this.log(`Total collected: ${allRaw.length} jobs`);
 
-    const jobs = allRaw.slice(0, maxResults).map((item) => this.mapNaukriItem(item)).filter((j) => this.matchesNaukri(j));
+    const jobs = allRaw.slice(0, maxResults)
+      .map((item) => this.mapNaukriItem(item))
+      .filter((j) => this.matchesNaukri(j));
 
     const withCareer = jobs.filter((j) => j.companyCareerUrl).length;
     if (withCareer > 0) this.log(`Career pages discovered: ${withCareer} companies`);
 
     return jobs;
+  }
+
+  // DOM scrape fallback — reads job cards directly from the search results page
+  private async scrapePageDOM(): Promise<NaukriJob[]> {
+    try {
+      return await this.page.evaluate(() => {
+        const cards = Array.from(document.querySelectorAll("article.jobTuple, div.srp-jobtuple-wrapper, div[class*='jobTupleHeader']"));
+        return cards.map((card) => {
+          const titleEl  = card.querySelector("a.title, a[class*='title']");
+          const compEl   = card.querySelector("a.subTitle, a[class*='companyInfo'], span[class*='company']");
+          const locEl    = card.querySelector("span[class*='location'], li[class*='location']");
+          const href     = titleEl?.getAttribute("href") ?? "";
+          // extract jobId from URL like /job-listings-...-jid-12345678
+          const jobIdMatch = href.match(/jid-(\d+)/i) ?? href.match(/-(\d+)\?/);
+          return {
+            jobId:       jobIdMatch?.[1] ?? String(Math.random()),
+            title:       titleEl?.textContent?.trim() ?? "",
+            companyName: compEl?.textContent?.trim()  ?? "",
+            jdURL:       href.startsWith("http") ? new URL(href).pathname : href,
+            placeholders: locEl ? [{ type: "location", label: locEl.textContent?.trim() ?? "" }] : [],
+          };
+        }).filter((j) => j.title && j.companyName);
+      });
+    } catch {
+      return [];
+    }
   }
 
   private mapNaukriItem(item: NaukriJob): Job {
