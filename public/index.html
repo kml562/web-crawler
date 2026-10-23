@@ -232,6 +232,21 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
 .naukri-stat-label{font-size:12px;color:var(--fg-muted);margin-top:3px}
 .naukri-score-bar{height:6px;border-radius:3px;background:var(--border);margin-top:8px;overflow:hidden}
 .naukri-score-fill{height:100%;border-radius:3px;background:var(--a-grad);transition:width 1s ease}
+.log-filter-select{padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--fg);font-family:inherit;font-size:12px;cursor:pointer}
+.log-row{display:grid;grid-template-columns:130px 60px 80px 1fr;gap:8px;padding:5px 10px;border-radius:6px;align-items:start;border:1px solid transparent}
+.log-row:hover{background:var(--surface2)}
+.log-row.level-error{border-color:var(--red);background:var(--red-bg)}
+.log-row.level-warn{border-color:var(--amber);background:var(--amber-bg)}
+.log-row.level-info{}
+.log-row.level-debug{opacity:.6}
+.log-ts{color:var(--fg-muted);font-size:11px;white-space:nowrap}
+.log-level{font-weight:700;text-transform:uppercase;font-size:10px;padding:1px 6px;border-radius:4px;text-align:center}
+.log-level.error{background:var(--red);color:#fff}
+.log-level.warn{background:var(--amber);color:#000}
+.log-level.info{background:var(--accent);color:#fff}
+.log-level.debug{background:var(--border);color:var(--fg-muted)}
+.log-svc{color:var(--fg-muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-msg{word-break:break-word;white-space:pre-wrap}
 .career-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px}
 .career-company{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .career-links{display:flex;gap:6px;flex-shrink:0}
@@ -350,6 +365,7 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
     <button class="tab-btn" data-tab="analytics">📈 Analytics</button>
     <button class="tab-btn" data-tab="naukri">🇮🇳 Naukri</button>
     <button class="tab-btn" data-tab="history">📋 History</button>
+    <button class="tab-btn" data-tab="logs">🪵 Logs</button>
     <button class="tab-btn" data-tab="profile">👤 Profile</button>
   </div>
 
@@ -587,6 +603,37 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
     </div>
   </div><!-- /history -->
 
+  <!-- ═══ LOGS TAB ═══ -->
+  <div class="tab-content" id="tab-logs">
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-weight:600;font-size:14px">System Logs</span>
+        <select id="logLevelFilter" class="log-filter-select">
+          <option value="all">All levels</option>
+          <option value="error">Error</option>
+          <option value="warn">Warn</option>
+          <option value="info">Info</option>
+          <option value="debug">Debug</option>
+        </select>
+        <select id="logServiceFilter" class="log-filter-select">
+          <option value="all">All services</option>
+          <option value="naukri">Naukri</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="indeed">Indeed</option>
+          <option value="server">Server</option>
+          <option value="http">HTTP</option>
+          <option value="db">DB</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="refreshLogsBtn">↻ Refresh</button>
+        <button class="btn btn-ghost btn-sm" id="autoRefreshLogsBtn">▶ Auto-refresh</button>
+        <span id="logCount" style="font-size:12px;color:var(--fg-muted);margin-left:auto"></span>
+      </div>
+    </div>
+    <div id="logsTable" style="display:flex;flex-direction:column;gap:4px;font-family:monospace;font-size:12px">
+      <div style="color:var(--fg-muted);text-align:center;padding:30px">Click Refresh to load logs</div>
+    </div>
+  </div><!-- /logs -->
+
   <!-- ═══ PROFILE TAB ═══ -->
   <div class="tab-content" id="tab-profile">
     <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start" class="profile-layout">
@@ -743,6 +790,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     if (btn.dataset.tab === 'history') loadRuns();
     if (btn.dataset.tab === 'analytics') { if (allJobs.length) renderAnalytics(computeStatsFromJobs(allJobs)); loadAnalytics(); }
     if (btn.dataset.tab === 'naukri') loadNaukriStats();
+    if (btn.dataset.tab === 'logs') loadLogs();
   });
 });
 
@@ -954,8 +1002,18 @@ function connectSSE() {
   if (evtSource) { evtSource.close(); evtSource = null; }
   evtSource = new EventSource(`${API}/api/events`);
   evtSource.addEventListener('log', e => {
-    const { msg } = JSON.parse(e.data);
-    addLog(msg, msg.startsWith('✓')||msg.startsWith('Done') ? 'ok' : msg.startsWith('✗')||msg.startsWith('Error')||msg.startsWith('Fatal') ? 'err' : '');
+    const { msg, level } = JSON.parse(e.data);
+    addLog(msg, level === 'error' || msg.startsWith('✗')||msg.startsWith('Fatal') ? 'err' : level === 'warn' ? 'warn' : msg.startsWith('✓')||msg.startsWith('Done') ? 'ok' : '');
+    // if logs tab is open, prepend this line live without a full reload
+    if (document.getElementById('tab-logs').classList.contains('active')) {
+      const table = document.getElementById('logsTable');
+      const ts = new Date().toLocaleString();
+      const lvl = (level || 'info').toLowerCase();
+      const row = document.createElement('div');
+      row.className = `log-row level-${lvl}`;
+      row.innerHTML = `<span class="log-ts">${ts}</span><span class="log-level ${lvl}">${lvl}</span><span class="log-svc">crawl</span><span class="log-msg">${esc(msg)}</span>`;
+      table.insertBefore(row, table.firstChild);
+    }
   });
   evtSource.addEventListener('done', e => {
     const { stats } = JSON.parse(e.data); if (stats) render(stats); setCrawling(false);
@@ -1170,6 +1228,58 @@ async function loadCareerPages() {
     }).join('');
   } catch { /* ignore */ }
 }
+
+// ── logs tab ───────────────────────────────────────────────
+let logsAutoRefresh = null;
+
+async function loadLogs() {
+  const level   = document.getElementById('logLevelFilter').value;
+  const service = document.getElementById('logServiceFilter').value;
+  const table   = document.getElementById('logsTable');
+  const countEl = document.getElementById('logCount');
+  table.innerHTML = '<div style="color:var(--fg-muted);text-align:center;padding:20px">Loading…</div>';
+  try {
+    const params = new URLSearchParams({ limit: '200' });
+    if (level   !== 'all') params.set('level',   level);
+    if (service !== 'all') params.set('service', service);
+    const res  = await fetch(`${API}/api/logs?${params}`);
+    const data = await res.json();
+    const logs = data.logs || [];
+    countEl.textContent = `${logs.length} entries`;
+    if (!logs.length) {
+      table.innerHTML = '<div style="color:var(--fg-muted);text-align:center;padding:30px">No logs found — run a crawl first</div>';
+      return;
+    }
+    table.innerHTML = logs.map(l => {
+      const ts  = new Date(l.timestamp).toLocaleString();
+      const lvl = (l.level || 'info').toLowerCase();
+      const svc = l.metadata?.service || l.service || '—';
+      const msg = esc(l.message || '');
+      return `<div class="log-row level-${lvl}">
+        <span class="log-ts">${ts}</span>
+        <span class="log-level ${lvl}">${lvl}</span>
+        <span class="log-svc">${esc(svc)}</span>
+        <span class="log-msg">${msg}</span>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    table.innerHTML = `<div style="color:var(--fg-muted);text-align:center;padding:20px">Failed to load logs — is the server running?</div>`;
+  }
+}
+
+document.getElementById('refreshLogsBtn').addEventListener('click', loadLogs);
+document.getElementById('logLevelFilter').addEventListener('change', loadLogs);
+document.getElementById('logServiceFilter').addEventListener('change', loadLogs);
+document.getElementById('autoRefreshLogsBtn').addEventListener('click', function() {
+  if (logsAutoRefresh) {
+    clearInterval(logsAutoRefresh); logsAutoRefresh = null;
+    this.textContent = '▶ Auto-refresh';
+  } else {
+    loadLogs();
+    logsAutoRefresh = setInterval(loadLogs, 3000);
+    this.textContent = '⏹ Stop auto-refresh';
+  }
+});
 
 // ── analytics aggregation ──────────────────────────────────
 async function loadAnalytics() {

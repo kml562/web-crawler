@@ -21,6 +21,7 @@
     "@types/multer": "^2.3.0",
     "@types/node": "^26.6.5",
     "@types/pdf-parse": "^1.1.5",
+    "@types/winston": "^2.4.4",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
@@ -37,6 +38,8 @@
     "mongoose": "^9.11.3",
     "multer": "^2.5.0",
     "pdf-parse": "^2.4.5",
-    "playwright": "^1.64.1"
+    "playwright": "^1.64.1",
+    "winston": "^3.19.0",
+    "winston-mongodb": "^7.0.1"
   }
 }

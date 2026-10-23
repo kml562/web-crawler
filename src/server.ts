@@ -19,6 +19,8 @@ import { appendResult, loadApplied } from "./tracker/storage.js";
 import { listCareerPages, countCareerPages } from "./tracker/careerPages.js";
 import { connectDB } from "./db/connect.js";
 import { CrawlRun } from "./db/models/CrawlRun.js";
+import { SystemLog } from "./db/models/SystemLog.js";
+import { logger } from "./utils/logger.js";
 import type { BaseScraper } from "./crawler/base.js";
 import { getAuthStatus, loginWithBrowser, disconnect, isConnected } from "./auth/loginManager.js";
 import type { AuthSource } from "./auth/loginManager.js";
@@ -31,6 +33,14 @@ const PORT = process.env["PORT"] ?? 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// ── HTTP request logging ─────────────────────────────────
+app.use((req, _res, next) => {
+  if (!req.path.startsWith("/api/events")) { // skip SSE noise
+    logger.debug(`${req.method} ${req.path}`, { service: "http" });
+  }
+  next();
+});
 
 // ── app-level password guard ─────────────────────────────
 const APP_PASSWORD = process.env["APP_PASSWORD"];
@@ -158,7 +168,8 @@ app.post("/api/crawl", (req, res) => {
 
     const addLog = (level: "info" | "warn" | "error", msg: string) => {
       run.logs.push({ time: new Date().toISOString(), level, msg });
-      broadcast("log", { msg });
+      broadcast("log", { msg, level });
+      logger[level](msg, { service: source, runId: String(run._id) });
     };
 
     const addFailure = (jobTitle: string, company: string, reason: string, url: string) => {
@@ -268,6 +279,7 @@ app.post("/api/crawl", (req, res) => {
       await run.save();
       broadcast("error", { msg });
       addLog("error", `Fatal error: ${msg}`);
+      logger.error(`Crawl failed [${source}]: ${msg}`, err, { service: source });
     } finally {
       await run.save().catch(() => {});
       crawlRunning = false;
@@ -321,6 +333,22 @@ app.get("/api/naukri/performance", async (_req, res) => {
 // ── crawl run history ─────────────────────────────────────
 app.get("/api/career-pages", (_req, res) => {
   res.json({ count: countCareerPages(), pages: listCareerPages() });
+});
+
+app.get("/api/logs", async (req, res) => {
+  try {
+    await connectDB();
+    const limit  = Math.min(Number(req.query["limit"] ?? 200), 500);
+    const level  = req.query["level"] as string | undefined;
+    const service = req.query["service"] as string | undefined;
+    const filter: Record<string, unknown> = {};
+    if (level && level !== "all") filter["level"] = level;
+    if (service && service !== "all") filter["service"] = service;
+    const logs = await SystemLog.find(filter).sort({ timestamp: -1 }).limit(limit).lean();
+    res.json({ logs });
+  } catch (err) {
+    res.status(500).json({ error: "Could not fetch logs" });
+  }
 });
 
 app.get("/api/runs", async (_req, res) => {
